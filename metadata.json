@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Aspirasi Pamekasan",
+  "description": "Database schema and crypto module for Secure Next.js App Router handling local aspirations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
