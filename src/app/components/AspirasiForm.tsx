@@ -19,13 +19,16 @@ const KECAMATAN_LIST = [
   'Waru',
 ];
 
+const FONT_SCALES = ['scale-100', 'scale-125', 'scale-150', 'scale-200'] as const;
+
 export default function AspirasiForm() {
   const [isHighContrast, setIsHighContrast] = useState(false);
-  const [fontSizeScale, setFontSizeScale] = useState(1);
+  const [currentScale, setCurrentScale] = useState<string>('scale-100');
   const [isPending, startTransition] = useTransition();
 
   const [formResult, setFormResult] = useState<{
     routing: string;
+    staff_phone: string;
     nama_pelapor: string;
     kecamatan: string;
     isi_aspirasi: string;
@@ -33,34 +36,61 @@ export default function AspirasiForm() {
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Sinkronisasi state React dengan class di <html> yang sudah diterapkan oleh anti-flash script
   useEffect(() => {
-    const savedContrast = localStorage.getItem('accessibility_high_contrast');
-    if (savedContrast === 'true') setIsHighContrast(true);
+    const root = document.documentElement;
 
-    const savedFontSize = localStorage.getItem('accessibility_font_size');
-    if (savedFontSize) setFontSizeScale(parseFloat(savedFontSize));
+    const savedContrast = localStorage.getItem('accessibility_high_contrast');
+    if (savedContrast === 'true') {
+      setIsHighContrast(true);
+      root.classList.add('high-contrast');
+    }
+
+    const savedScale = localStorage.getItem('accessibility_font_size');
+    if (savedScale && FONT_SCALES.includes(savedScale as typeof FONT_SCALES[number])) {
+      setCurrentScale(savedScale);
+      root.classList.add(savedScale);
+    } else {
+      // Cek apakah anti-flash script sudah menerapkan class
+      const activeScale = FONT_SCALES.find((s) => root.classList.contains(s));
+      if (activeScale) setCurrentScale(activeScale);
+    }
   }, []);
 
   const toggleHighContrast = () => {
     const newValue = !isHighContrast;
     setIsHighContrast(newValue);
     localStorage.setItem('accessibility_high_contrast', String(newValue));
+
+    // Manipulasi langsung elemen root <html>
+    const root = document.documentElement;
+    if (newValue) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+  };
+
+  const applyScaleMutation = (targetScale: string): void => {
+    const root = document.documentElement;
+    FONT_SCALES.forEach((scale) => root.classList.remove(scale));
+    root.classList.add(targetScale);
+    localStorage.setItem('accessibility_font_size', targetScale);
+    setCurrentScale(targetScale);
   };
 
   const increaseFontSize = () => {
-    setFontSizeScale((prev) => {
-      const next = Math.min(prev + 0.2, 1.6);
-      localStorage.setItem('accessibility_font_size', String(next));
-      return next;
-    });
+    const currentIndex = FONT_SCALES.indexOf(currentScale as typeof FONT_SCALES[number]);
+    if (currentIndex < FONT_SCALES.length - 1) {
+      applyScaleMutation(FONT_SCALES[currentIndex + 1]);
+    }
   };
 
   const decreaseFontSize = () => {
-    setFontSizeScale((prev) => {
-      const next = Math.max(prev - 0.2, 0.8);
-      localStorage.setItem('accessibility_font_size', String(next));
-      return next;
-    });
+    const currentIndex = FONT_SCALES.indexOf(currentScale as typeof FONT_SCALES[number]);
+    if (currentIndex > 0) {
+      applyScaleMutation(FONT_SCALES[currentIndex - 1]);
+    }
   };
 
   const handleAction = (formData: FormData) => {
@@ -77,6 +107,7 @@ export default function AspirasiForm() {
         if (response.success) {
           setFormResult({
             routing: response.routing || 'Humas DPD PKS Pamekasan (Default)',
+            staff_phone: response.staff_phone || '6284444444444',
             nama_pelapor,
             kecamatan,
             isi_aspirasi,
@@ -92,18 +123,14 @@ export default function AspirasiForm() {
 
   const getWhatsAppLink = () => {
     if (!formResult) return '#';
-    const phone = '6281234567890'; // Default representative number
     const encodedMessage = encodeURIComponent(
-      `Halo, saya ${formResult.nama_pelapor} dari kecamatan ${formResult.kecamatan}. Saya baru saja mengirimkan aspirasi via sistem: "${formResult.isi_aspirasi}". Mohon info tindak lanjutnya.`
+      `BISMILLAH - ASPIRASI WARGA PAMEKASAN\n\n*Nama Pelapor*: ${formResult.nama_pelapor}\n*Domisili*: Kecamatan ${formResult.kecamatan}\n*Isi Pengaduan*: "${formResult.isi_aspirasi}"\n\n_Aspirasi dikirim resmi melalui Portal E-Aspirasi DPD PKS Pamekasan._`
     );
-    return `https://wa.me/${phone}?text=${encodedMessage}`;
+    return `https://wa.me/${formResult.staff_phone}?text=${encodedMessage}`;
   };
 
-  // Set colors based on High Contrast Mode (#000000 background, #FFFF00 for text/borders)
-  const wrapperClass = isHighContrast
-    ? 'bg-[#000000] text-[#FFFF00] min-h-screen transition-colors duration-200'
-    : 'bg-gray-50 text-gray-900 min-h-screen transition-colors duration-200';
-
+  // Styling classes — warna/border ditentukan oleh state high-contrast
+  // Background & teks utama kini dikendalikan oleh class .high-contrast di <html> (globals.css)
   const cardClass = isHighContrast
     ? 'bg-[#000000] border-2 border-[#FFFF00]'
     : 'bg-white border border-gray-200 shadow-sm';
@@ -117,7 +144,7 @@ export default function AspirasiForm() {
     : 'bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-gray-900';
 
   return (
-    <div className={wrapperClass} style={{ fontSize: `${fontSizeScale}rem` }}>
+    <div className="min-h-screen transition-colors duration-200">
       <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className={`rounded-xl p-6 sm:p-8 mb-8 ${cardClass}`}>
           {/* Accessibility Toolbar */}

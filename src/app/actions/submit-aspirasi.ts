@@ -6,56 +6,40 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { neon } from '@neondatabase/serverless';
 
-// Strict validation criteria
 const PAMEKASAN_KECAMATAN = [
-  'Batumarmar',
-  'Galis',
-  'Kadur',
-  'Larangan',
-  'Pademawu',
-  'Pakong',
-  'Palengaan',
-  'Pamekasan',
-  'Pasean',
-  'Pegantenan',
-  'Proppo',
-  'Tlanakan',
-  'Waru',
+  'Batumarmar', 'Galis', 'Kadur', 'Larangan', 'Pademawu',
+  'Pakong', 'Palengaan', 'Pamekasan', 'Pasean', 'Pegantenan',
+  'Proppo', 'Tlanakan', 'Waru'
 ] as const;
 
 type Kecamatan = typeof PAMEKASAN_KECAMATAN[number];
 
-// 3. Hardcode the ground-truth routing metrics for PKS Pamekasan without variations
-/**
- * Determines the routing parameter for the assigned_to field based on ground-truth metrics.
- */
-function determineRouting(kecamatan: string): string {
-  if (kecamatan === 'Pamekasan' || kecamatan === 'Tlanakan') {
-    return 'Staf Ahli Suryono (Dapil 1)';
-  }
-  if (kecamatan === 'Proppo' || kecamatan === 'Palengaan') {
-    return 'Staf Ahli H. Imam Ghozali (Dapil 2)';
-  }
-  if (kecamatan === 'Batumarmar' || kecamatan === 'Pasean' || kecamatan === 'Waru') {
-    return "Staf Ahli Juma'ah (Dapil 3)";
-  }
-  if (kecamatan === 'Galis' || kecamatan === 'Larangan' || kecamatan === 'Pademawu') {
-    return 'Staf Ahli Ita Kusmita (Dapil 5)';
-  }
-  return 'Humas DPD PKS Pamekasan (Default)';
+interface RoutingDetails {
+  assigned_to: string;
+  staff_phone: string;
 }
 
-/**
- * Server Action for processing Aspiration Form submission.
- * Validates inputs, extracts Server IP, encrypts NIK, and prepares payload.
- */
+function determineRoutingDetails(kecamatan: string): RoutingDetails {
+  if (kecamatan === 'Pamekasan' || kecamatan === 'Tlanakan') {
+    return { assigned_to: 'Staf Ahli Suryono (Dapil 1)', staff_phone: '6281111111111' };
+  }
+  if (kecamatan === 'Proppo' || kecamatan === 'Palengaan') {
+    return { assigned_to: 'Staf Ahli H. Imam Ghozali (Dapil 2)', staff_phone: '6282222222222' };
+  }
+  if (kecamatan === 'Batumarmar' || kecamatan === 'Pasean' || kecamatan === 'Waru') {
+    return { assigned_to: "Staf Ahli Juma'ah (Dapil 3)", staff_phone: '6283333333333' };
+  }
+  if (kecamatan === 'Galis' || kecamatan === 'Larangan' || kecamatan === 'Pademawu') {
+    return { assigned_to: 'Staf Ahli Ita Kusmita (Dapil 5)', staff_phone: '6285555555555' };
+  }
+  return { assigned_to: 'Humas DPD PKS Pamekasan (Default)', staff_phone: '6284444444444' };
+}
+
 export async function submitAspirasi(formData: FormData) {
-  // 1. Impor `headers` dari `next/headers`. (Done at top of file)
-  // 2. Ekstraksi IP Sisi Server (Wajib Sesuai Audit Bug)
-  // Validating the exact IP array extraction pattern as instructed.
   const headersList = await headers();
   const forwardedFor = headersList.get('x-forwarded-for');
   let ipAddress = '127.0.0.1';
+
   if (forwardedFor) {
     const ipArray = forwardedFor.split(',');
     if (ipArray[0]) {
@@ -68,26 +52,26 @@ export async function submitAspirasi(formData: FormData) {
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || '';
 
     if (redisUrl && redisToken) {
-      const ratelimit = new Ratelimit({
-        redis: new Redis({
-          url: redisUrl,
-          token: redisToken,
-        }),
-        limiter: Ratelimit.slidingWindow(3, "24 h"),
-      });
+      try {
+        const ratelimit = new Ratelimit({
+          redis: new Redis({ url: redisUrl, token: redisToken }),
+          limiter: Ratelimit.slidingWindow(3, "24 h"),
+        });
 
-      const { success: rateLimitSuccess } = await ratelimit.limit(ipAddress);
-      if (!rateLimitSuccess) {
-        return {
-          success: false,
-          error: "Batas pengiriman harian tercapai. Anda hanya dapat mengirimkan 3 aspirasi per 24 jam.",
-        };
+        const { success: rateLimitSuccess } = await ratelimit.limit(ipAddress);
+
+        if (!rateLimitSuccess) {
+          return {
+            success: false,
+            error: "Batas pengiriman harian tercapai. Anda hanya dapat mengirimkan 3 aspirasi per 24 jam.",
+          };
+        }
+      } catch (redisError) {
+        // Rate limiting gagal (Redis tidak tersedia/token invalid) — lanjutkan tanpa rate limit
+        console.warn('[Aspirasi] Rate limiting skipped due to Redis error:', redisError);
       }
-    } else {
-      console.warn('[Aspirasi Submit] Upstash Redis credentials omitted; rate limiting is disabled.');
     }
 
-    // Implement strict input validation and zero tolerance for truncated data inputs
     const nama_pelapor = formData.get('nama_pelapor')?.toString().trim();
     const nik = formData.get('nik')?.toString().trim();
     const nomor_whatsapp = formData.get('nomor_whatsapp')?.toString().trim();
@@ -106,13 +90,10 @@ export async function submitAspirasi(formData: FormData) {
       throw new Error('Validasi gagal: Input kecamatan berada di luar ruang lingkup Pamekasan.');
     }
 
-    // Encrypt sensitive data using custom AES-256-GCM crypto module
     const { ciphertext: nik_encrypted, iv: iv_nik, tag: tag_nik } = encryptData(nik);
 
-    // Hardcoded assignment based on routing metrics
-    const assigned_to = determineRouting(kecamatan);
+    const routingDetails = determineRoutingDetails(kecamatan);
 
-    // Payload ready for DB Insert
     const dbPayload = {
       nama_pelapor,
       nik_encrypted,
@@ -122,16 +103,9 @@ export async function submitAspirasi(formData: FormData) {
       kecamatan,
       isi_aspirasi,
       status_aspirasi: 'PENDING',
-      assigned_to,
+      assigned_to: routingDetails.assigned_to,
       ip_address: ipAddress,
     };
-
-    console.log('[Aspirasi Submit] Successfully processed validation and encryption.', {
-      ...dbPayload,
-      nik_encrypted: '[ENCRYPTED]', // Redact inside log
-      iv_nik: '[REDACTED]',
-      tag_nik: '[REDACTED]'
-    });
 
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
@@ -139,7 +113,7 @@ export async function submitAspirasi(formData: FormData) {
     }
 
     const sql = neon(databaseUrl);
-    
+
     await sql`
       INSERT INTO aspirasi (
         nama_pelapor,
@@ -165,14 +139,15 @@ export async function submitAspirasi(formData: FormData) {
         ${dbPayload.ip_address}
       )
     `;
-    
+
     return {
       success: true,
       message: 'Aspirasi sukses tervalidasi dan telah diamankan.',
-      routing: assigned_to,
+      routing: routingDetails.assigned_to,
+      staff_phone: routingDetails.staff_phone,
     };
   } catch (error) {
-    console.error('[Aspirasi Error] Error during submission processing', error);
+    console.error('[Aspirasi Error]', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Terjadi kesalahan sistem yang tidak diketahui.',

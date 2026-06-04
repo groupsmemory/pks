@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+@layer base {
+  /* ==========================================================================
+     Global High Contrast Mode Overrides (WCAG 2.1 AA Compliant)
+     ========================================================================== */
+  html.high-contrast,
+  html.high-contrast body,
+  html.high-contrast p,
+  html.high-contrast span,
+  html.high-contrast h1,
+  html.high-contrast h2,
+  html.high-contrast h3,
+  html.high-contrast label,
+  html.high-contrast strong,
+  html.high-contrast a,
+  html.high-contrast input,
+  html.high-contrast textarea,
+  html.high-contrast button {
+    background-color: #000000 !important;
+    color: #FFFF00 !important;
+    border-color: #FFFF00 !important;
+    outline-color: #FFFF00 !important;
+    box-shadow: none !important;
+  }
+
+  /* Penanda visual khusus tautan pada mode kontras tinggi */
+  html.high-contrast a {
+    text-decoration: underline !important;
+    text-underline-offset: 4px;
+  }
+
+  /* Modifikasi placeholder form untuk visibilitas kontras tinggi */
+  html.high-contrast input::placeholder,
+  html.high-contrast textarea::placeholder {
+    color: #FFFF00 !important;
+    opacity: 0.8;
+  }
+
+  /* ==========================================================================
+     Global Font Scaling Architecture (Applied to Document Root)
+     ========================================================================== */
+  html.scale-100 {
+    font-size: 16px !important;
+  }
+
+  html.scale-125 {
+    font-size: 20px !important;
+  }
+
+  html.scale-150 {
+    font-size: 24px !important;
+  }
+
+  html.scale-200 {
+    font-size: 32px !important;
+  }
+}

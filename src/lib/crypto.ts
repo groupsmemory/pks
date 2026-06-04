@@ -39,7 +39,7 @@ export interface EncryptedData {
  */
 export function encryptData(text: string): { ciphertext: string; iv: string; tag: string } {
   const key = getSecretKey();
-  const iv = crypto.randomBytes(16);
+  const iv = crypto.randomBytes(12); // Standar 12-byte IV untuk akselerasi AES-GCM
   const cipher = crypto.createCipheriv(AES_ALGORITHM, key, iv);
 
   let encrypted = cipher.update(text, 'utf8', 'hex');
