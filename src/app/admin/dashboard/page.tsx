@@ -14,7 +14,7 @@ async function getDashboardStats() {
     sql`SELECT COUNT(*) as total FROM berita`,
     sql`SELECT COUNT(*) as total FROM agenda`,
     sql`SELECT COUNT(*) as total FROM galeri`,
-  ]);
+  ]) as { total: number }[][];
 
   return {
     aspirasi: Number(aspirasiRows[0]?.total || 0),

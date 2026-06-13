@@ -21,18 +21,16 @@ export const authOptions: NextAuthOptions = {
 
         const sql = getDb();
 
-        const rows = await sql`
+        const [user] = await sql`
           SELECT id, nama, email, password_hash, role, is_active
           FROM admin_users
           WHERE email = ${email}
           LIMIT 1
-        `;
+        ` as { id: number; nama: string; email: string; password_hash: string; role: string; is_active: boolean }[];
 
-        if (rows.length === 0) {
+        if (!user) {
           throw new Error('Email atau password salah.');
         }
-
-        const user = rows[0];
 
         if (!user.is_active) {
           throw new Error('Akun Anda telah dinonaktifkan. Hubungi Super Admin.');
@@ -50,7 +48,7 @@ export const authOptions: NextAuthOptions = {
         `;
 
         return {
-          id: user.id,
+          id: String(user.id),
           name: user.nama,
           email: user.email,
           role: user.role,

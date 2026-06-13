@@ -77,12 +77,9 @@ export async function POST(request: NextRequest) {
     const sql = getDb();
 
     // Idempotency — cek apakah notifikasi duplikat (transaction_id + status sama)
-    const rows = await sql`
+    const [existingRecord] = await sql`
       SELECT midtrans_transaction_id, midtrans_status FROM donasi WHERE order_id = ${order_id}
-    `;
-
-    const existingRecord = rows[0] as
-      { midtrans_transaction_id: string | null; midtrans_status: string | null } | undefined;
+    ` as { midtrans_transaction_id: string | null; midtrans_status: string | null }[];
 
     if (
       existingRecord?.midtrans_transaction_id === transaction_id &&

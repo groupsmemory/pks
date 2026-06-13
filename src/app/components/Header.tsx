@@ -159,7 +159,7 @@ export default function Header() {
           >
             {/* Ganti dengan <Image src="/logo.png" alt="Logo PKS" width={40} height={40} /> */}
             <span aria-hidden="true" className="text-[1.5em] font-mono tracking-widest">)|(</span>
-            <span className="hidden lg:inline">Dewan Pengurus Daerah PKS Kabupaten Pamekasan</span>
+            <span className="hidden lg:inline">DPD PKS Kabupaten Pamekasan</span>
             <span className="hidden sm:inline lg:hidden">DPD PKS Kab. Pamekasan</span>
             <span className="sm:hidden">DPD PKS Pamekasan</span>
           </Link>
