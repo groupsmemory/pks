@@ -1,48 +1,19 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-
-interface SowanItem {
-  id: string;
-  namaKiai: string;
-  namaPesantren: string;
-  kecamatan: string;
-  tanggalSowan: string;
-  tausiyah: string[];
-  delegasi: string;
-}
+import React, { useState, useMemo } from 'react';
+import { PAMEKASAN_KECAMATAN } from '@/src/lib/constants';
+import { useAccessibility } from '@/src/hooks/useAccessibility';
+import type { SowanItem } from '@/src/data/sowan-kyai';
 
 interface SowanKyaiClientProps {
   data: SowanItem[];
 }
 
-const KECAMATAN_LIST = [
-  'Batumarmar', 'Galis', 'Kadur', 'Larangan', 'Pademawu',
-  'Pakong', 'Palengaan', 'Pamekasan', 'Pasean', 'Pegantenan',
-  'Proppo', 'Tlanakan', 'Waru',
-];
-
 export default function SowanKyaiClient({ data }: SowanKyaiClientProps) {
-  const [isHighContrast, setIsHighContrast] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterKecamatan, setFilterKecamatan] = useState('');
 
-  useEffect(() => {
-    const rootHasContrast = document.documentElement.classList.contains('high-contrast');
-    setIsHighContrast(rootHasContrast);
-
-    const observer = new MutationObserver(() => {
-      const hasContrast = document.documentElement.classList.contains('high-contrast');
-      setIsHighContrast(hasContrast);
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isHighContrast } = useAccessibility();
 
   // Filter array real-time di sisi klien (sesuai PRD: tanpa reload halaman)
   const filteredData = useMemo(() => {
@@ -105,7 +76,7 @@ export default function SowanKyaiClient({ data }: SowanKyaiClientProps) {
               className={`w-full min-h-[44px] px-4 py-3 rounded-lg outline-none transition-all focus:ring-4 ${inputClass}`}
             >
               <option value="">Semua Kecamatan</option>
-              {KECAMATAN_LIST.map((kec) => (
+              {PAMEKASAN_KECAMATAN.map((kec) => (
                 <option key={kec} value={kec}>{kec}</option>
               ))}
             </select>

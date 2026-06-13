@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 
 interface AgendaDetail {
   id: string;
@@ -16,10 +16,9 @@ interface AgendaDetail {
 }
 
 async function getAgenda(slug: string): Promise<AgendaDetail | null> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return null;
+  if (!process.env.DATABASE_URL) return null;
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT * FROM agenda WHERE slug = ${slug} LIMIT 1
   `;

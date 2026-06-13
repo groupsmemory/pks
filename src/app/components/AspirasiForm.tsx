@@ -1,29 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { submitAspirasi } from '@/src/app/actions/submit-aspirasi';
-
-const KECAMATAN_LIST = [
-  'Batumarmar',
-  'Galis',
-  'Kadur',
-  'Larangan',
-  'Pademawu',
-  'Pakong',
-  'Palengaan',
-  'Pamekasan',
-  'Pasean',
-  'Pegantenan',
-  'Proppo',
-  'Tlanakan',
-  'Waru',
-];
-
-const FONT_SCALES = ['scale-100', 'scale-125', 'scale-150', 'scale-200'] as const;
+import { aspirasiSchema, type AspirasiInput } from '@/src/validations/aspirasi';
+import { KECAMATAN } from '@/src/validations/index';
+import { useAccessibility } from '@/src/hooks/useAccessibility';
 
 export default function AspirasiForm() {
-  const [isHighContrast, setIsHighContrast] = useState(false);
-  const [currentScale, setCurrentScale] = useState<string>('scale-100');
   const [isPending, startTransition] = useTransition();
 
   const [formResult, setFormResult] = useState<{
@@ -36,87 +21,61 @@ export default function AspirasiForm() {
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Sinkronisasi state React dengan class di <html> yang sudah diterapkan oleh anti-flash script
-  useEffect(() => {
-    const root = document.documentElement;
+  const {
+    isHighContrast,
+    toggleHighContrast,
+    increaseFontSize,
+    decreaseFontSize,
+  } = useAccessibility();
 
-    const savedContrast = localStorage.getItem('accessibility_high_contrast');
-    if (savedContrast === 'true') {
-      setIsHighContrast(true);
-      root.classList.add('high-contrast');
-    }
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    control,
+    formState: { errors },
+  } = useForm<AspirasiInput>({
+    resolver: zodResolver(aspirasiSchema),
+    mode: 'onChange',
+  });
 
-    const savedScale = localStorage.getItem('accessibility_font_size');
-    if (savedScale && FONT_SCALES.includes(savedScale as typeof FONT_SCALES[number])) {
-      setCurrentScale(savedScale);
-      root.classList.add(savedScale);
-    } else {
-      // Cek apakah anti-flash script sudah menerapkan class
-      const activeScale = FONT_SCALES.find((s) => root.classList.contains(s));
-      if (activeScale) setCurrentScale(activeScale);
-    }
-  }, []);
+  const nikValue = useWatch({ control, name: 'nik' });
+  const phoneValue = useWatch({ control, name: 'nomor_whatsapp' });
 
-  const toggleHighContrast = () => {
-    const newValue = !isHighContrast;
-    setIsHighContrast(newValue);
-    localStorage.setItem('accessibility_high_contrast', String(newValue));
-
-    // Manipulasi langsung elemen root <html>
-    const root = document.documentElement;
-    if (newValue) {
-      root.classList.add('high-contrast');
-    } else {
-      root.classList.remove('high-contrast');
-    }
+  const fieldBorder = (field: keyof AspirasiInput) => {
+    if (errors[field]) return isHighContrast ? 'border-red-400' : 'border-red-500';
+    const val = field === 'nik' ? nikValue : field === 'nomor_whatsapp' ? phoneValue : undefined;
+    if (val && val.length > 0 && !errors[field]) return isHighContrast ? 'border-[#FFFF00]' : 'border-green-500';
+    return '';
   };
 
-  const applyScaleMutation = (targetScale: string): void => {
-    const root = document.documentElement;
-    FONT_SCALES.forEach((scale) => root.classList.remove(scale));
-    root.classList.add(targetScale);
-    localStorage.setItem('accessibility_font_size', targetScale);
-    setCurrentScale(targetScale);
-  };
-
-  const increaseFontSize = () => {
-    const currentIndex = FONT_SCALES.indexOf(currentScale as typeof FONT_SCALES[number]);
-    if (currentIndex < FONT_SCALES.length - 1) {
-      applyScaleMutation(FONT_SCALES[currentIndex + 1]);
-    }
-  };
-
-  const decreaseFontSize = () => {
-    const currentIndex = FONT_SCALES.indexOf(currentScale as typeof FONT_SCALES[number]);
-    if (currentIndex > 0) {
-      applyScaleMutation(FONT_SCALES[currentIndex - 1]);
-    }
-  };
-
-  const handleAction = (formData: FormData) => {
+  const onSubmit = (formData: AspirasiInput) => {
     setErrorMsg(null);
     setFormResult(null);
 
-    const nama_pelapor = formData.get('nama_pelapor')?.toString() || '';
-    const kecamatan = formData.get('kecamatan')?.toString() || '';
-    const isi_aspirasi = formData.get('isi_aspirasi')?.toString() || '';
-
     startTransition(async () => {
       try {
-        const response = await submitAspirasi(formData);
+        const fd = new FormData();
+        fd.set('nama_pelapor', formData.nama_pelapor);
+        fd.set('nik', formData.nik);
+        fd.set('nomor_whatsapp', formData.nomor_whatsapp);
+        fd.set('kecamatan', formData.kecamatan);
+        fd.set('isi_aspirasi', formData.isi_aspirasi);
+
+        const response = await submitAspirasi(fd);
         if (response.success) {
           setFormResult({
             routing: response.routing || 'Humas DPD PKS Pamekasan (Default)',
             staff_phone: response.staff_phone || '6284444444444',
-            nama_pelapor,
-            kecamatan,
-            isi_aspirasi,
+            nama_pelapor: formData.nama_pelapor,
+            kecamatan: formData.kecamatan,
+            isi_aspirasi: formData.isi_aspirasi,
           });
         } else {
           setErrorMsg(response.error || response.message || 'Gagal mengirim aspirasi.');
         }
-      } catch (e: any) {
-        setErrorMsg(e.message || 'Terjadi kesalahan tidak terduga');
+      } catch (e: unknown) {
+        setErrorMsg(e instanceof Error ? e.message : 'Terjadi kesalahan tidak terduga');
       }
     });
   };
@@ -129,8 +88,6 @@ export default function AspirasiForm() {
     return `https://wa.me/${formResult.staff_phone}?text=${encodedMessage}`;
   };
 
-  // Styling classes — warna/border ditentukan oleh state high-contrast
-  // Background & teks utama kini dikendalikan oleh class .high-contrast di <html> (globals.css)
   const cardClass = isHighContrast
     ? 'bg-[#000000] border-2 border-[#FFFF00]'
     : 'bg-white border border-gray-200 shadow-sm';
@@ -139,9 +96,13 @@ export default function AspirasiForm() {
     ? 'bg-[#000000] text-[#FFFF00] border-2 border-[#FFFF00] hover:bg-[#FFFF00] hover:text-[#000000] focus:ring-[#FFFF00]'
     : 'bg-blue-600 text-white border border-transparent hover:bg-blue-700 focus:ring-blue-300';
 
-  const inputClass = isHighContrast
-    ? 'bg-[#000000] border-2 border-[#FFFF00] text-[#FFFF00] focus:ring-[#FFFF00] focus:border-[#FFFF00]'
-    : 'bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-gray-900';
+  const inputClass = (field: keyof AspirasiInput) => {
+    const extra = fieldBorder(field);
+    if (isHighContrast) {
+      return `w-full min-h-[44px] px-4 rounded outline-none transition-all bg-[#000000] border-2 ${extra || 'border-[#FFFF00]'} text-[#FFFF00] focus:ring-[#FFFF00] focus:border-[#FFFF00]`;
+    }
+    return `w-full min-h-[44px] px-4 rounded outline-none transition-all bg-white border-2 ${extra || 'border-gray-300'} focus:border-blue-500 focus:ring-blue-200 text-gray-900`;
+  };
 
   return (
     <div className="min-h-screen transition-colors duration-200">
@@ -212,7 +173,7 @@ export default function AspirasiForm() {
           )}
 
           {!formResult ? (
-            <form action={handleAction} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="nama_pelapor" className="block font-bold">
                   Nama Lengkap
@@ -220,10 +181,10 @@ export default function AspirasiForm() {
                 <input
                   type="text"
                   id="nama_pelapor"
-                  name="nama_pelapor"
-                  required
-                  className={`w-full min-h-[44px] px-4 rounded outline-none transition-all ${inputClass}`}
+                  className={inputClass('nama_pelapor')}
+                  {...register('nama_pelapor')}
                 />
+                {errors.nama_pelapor && <p className="text-red-500 text-sm mt-1">{errors.nama_pelapor.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -233,12 +194,22 @@ export default function AspirasiForm() {
                 <input
                   type="text"
                   id="nik"
-                  name="nik"
-                  required
-                  pattern="\d{16}"
-                  title="Harus berisi tepat 16 digit angka"
-                  className={`w-full min-h-[44px] px-4 rounded outline-none transition-all ${inputClass}`}
+                  inputMode="numeric"
+                  maxLength={16}
+                  className={inputClass('nik')}
+                  {...register('nik')}
                 />
+                <div className="flex items-center gap-2 text-xs mt-1">
+                  <span className={isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500'}>
+                    {(nikValue || '').length}/16 digit
+                  </span>
+                  {(nikValue || '').length === 16 && !errors.nik && (
+                    <span className={isHighContrast ? 'text-[#FFFF00]' : 'text-green-600'}>✓ NIK valid</span>
+                  )}
+                  {errors.nik && (
+                    <span className="text-red-500">{errors.nik.message}</span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -248,10 +219,21 @@ export default function AspirasiForm() {
                 <input
                   type="tel"
                   id="nomor_whatsapp"
-                  name="nomor_whatsapp"
-                  required
-                  className={`w-full min-h-[44px] px-4 rounded outline-none transition-all ${inputClass}`}
+                  placeholder="628xxxxxxxxxx"
+                  className={inputClass('nomor_whatsapp')}
+                  {...register('nomor_whatsapp')}
                 />
+                <div className="flex items-center gap-2 text-xs mt-1">
+                  <span className={isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500'}>
+                    Format: 62 diikuti 10-15 digit angka
+                  </span>
+                  {phoneValue && phoneValue.length > 0 && !errors.nomor_whatsapp && (
+                    <span className={isHighContrast ? 'text-[#FFFF00]' : 'text-green-600'}>✓</span>
+                  )}
+                  {errors.nomor_whatsapp && (
+                    <span className="text-red-500">{errors.nomor_whatsapp.message}</span>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -260,17 +242,17 @@ export default function AspirasiForm() {
                 </label>
                 <select
                   id="kecamatan"
-                  name="kecamatan"
-                  required
-                  className={`w-full min-h-[44px] px-4 rounded outline-none transition-all ${inputClass}`}
+                  className={`w-full min-h-[44px] px-4 rounded outline-none transition-all ${isHighContrast ? 'bg-[#000000] border-2 border-[#FFFF00] text-[#FFFF00] focus:ring-[#FFFF00] focus:border-[#FFFF00]' : 'bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-gray-900'}`}
+                  {...register('kecamatan')}
                 >
                   <option value="">-- Pilih Kecamatan --</option>
-                  {KECAMATAN_LIST.map((kecamatan) => (
+                  {KECAMATAN.map((kecamatan) => (
                     <option key={kecamatan} value={kecamatan}>
                       {kecamatan}
                     </option>
                   ))}
                 </select>
+                {errors.kecamatan && <p className="text-red-500 text-sm mt-1">{errors.kecamatan.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -279,11 +261,11 @@ export default function AspirasiForm() {
                 </label>
                 <textarea
                   id="isi_aspirasi"
-                  name="isi_aspirasi"
-                  required
                   rows={5}
-                  className={`w-full min-h-[44px] p-4 rounded outline-none resize-y transition-all ${inputClass}`}
+                  className={`w-full min-h-[44px] p-4 rounded outline-none resize-y transition-all ${isHighContrast ? 'bg-[#000000] border-2 border-[#FFFF00] text-[#FFFF00] focus:ring-[#FFFF00] focus:border-[#FFFF00]' : 'bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-gray-900'}`}
+                  {...register('isi_aspirasi')}
                 />
+                {errors.isi_aspirasi && <p className="text-red-500 text-sm mt-1">{errors.isi_aspirasi.message}</p>}
               </div>
 
               <button

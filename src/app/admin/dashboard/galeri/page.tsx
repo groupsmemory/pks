@@ -1,5 +1,6 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import { GaleriForm, GaleriDeleteForm } from './GaleriClient';
+import EmptyState from '@/src/components/EmptyState';
 
 interface GaleriRow {
   id: string;
@@ -10,10 +11,9 @@ interface GaleriRow {
 }
 
 async function getGaleriList(): Promise<GaleriRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, image_url, category, created_at
     FROM galeri ORDER BY created_at DESC LIMIT 100
@@ -36,9 +36,10 @@ export default async function AdminGaleriPage() {
       <GaleriForm />
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada galeri.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada galeri."
+        />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {data.map((row) => (

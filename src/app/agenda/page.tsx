@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import EmptyState from '@/src/components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Agenda — DPD PKS Pamekasan',
@@ -20,10 +21,9 @@ interface AgendaRow {
 }
 
 async function getAgendaList(): Promise<AgendaRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, slug, description, date, time_start, time_end, location, image_url
     FROM agenda ORDER BY date DESC LIMIT 50
@@ -84,9 +84,7 @@ export default async function AgendaPage() {
         <p className="text-gray-600 mb-8">Jadwal kegiatan DPD PKS Pamekasan</p>
 
         {data.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-            <p className="text-gray-500 text-lg">Belum ada agenda.</p>
-          </div>
+          <EmptyState message="Belum ada agenda." />
         ) : (
           <>
             {upcoming.length > 0 && (

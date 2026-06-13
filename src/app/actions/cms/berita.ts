@@ -1,34 +1,22 @@
 'use server';
 
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import { revalidatePath } from 'next/cache';
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
+import { parseFormData } from '@/src/validations/helpers';
+import { createBeritaSchema, updateBeritaSchema, deleteBeritaSchema } from '@/src/validations/cms/berita';
+import { slugify } from '@/src/lib/utils';
 
 export async function createBerita(formData: FormData) {
   try {
-    const title = formData.get('title')?.toString().trim();
-    const content = formData.get('content')?.toString().trim();
-    const excerpt = formData.get('excerpt')?.toString().trim() || null;
-    const image_url = formData.get('image_url')?.toString().trim() || null;
-    const author = formData.get('author')?.toString().trim() || 'Humas DPD PKS Pamekasan';
-
-    if (!title || !content) {
-      throw new Error('Judul dan konten wajib diisi.');
-    }
+    const data = parseFormData(formData, createBeritaSchema);
+    const title = data.title;
+    const content = data.content;
+    const excerpt = data.excerpt || null;
+    const image_url = data.image_url || null;
+    const author = data.author || 'Humas DPD PKS Pamekasan';
 
     const slug = slugify(title);
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error('DATABASE_URL tidak ditemukan.');
-
-    const sql = neon(databaseUrl);
+    const sql = getDb();
     await sql`
       INSERT INTO berita (title, slug, content, excerpt, image_url, author)
       VALUES (${title}, ${slug}, ${content}, ${excerpt}, ${image_url}, ${author})
@@ -47,22 +35,16 @@ export async function createBerita(formData: FormData) {
 
 export async function updateBerita(formData: FormData) {
   try {
-    const id = formData.get('id')?.toString().trim();
-    const title = formData.get('title')?.toString().trim();
-    const content = formData.get('content')?.toString().trim();
-    const excerpt = formData.get('excerpt')?.toString().trim() || null;
-    const image_url = formData.get('image_url')?.toString().trim() || null;
-    const author = formData.get('author')?.toString().trim() || 'Humas DPD PKS Pamekasan';
-
-    if (!id || !title || !content) {
-      throw new Error('ID, judul, dan konten wajib diisi.');
-    }
+    const data = parseFormData(formData, updateBeritaSchema);
+    const id = data.id;
+    const title = data.title;
+    const content = data.content;
+    const excerpt = data.excerpt || null;
+    const image_url = data.image_url || null;
+    const author = data.author || 'Humas DPD PKS Pamekasan';
 
     const slug = slugify(title);
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error('DATABASE_URL tidak ditemukan.');
-
-    const sql = neon(databaseUrl);
+    const sql = getDb();
     await sql`
       UPDATE berita
       SET title = ${title}, slug = ${slug}, content = ${content},
@@ -85,13 +67,9 @@ export async function updateBerita(formData: FormData) {
 
 export async function deleteBerita(formData: FormData) {
   try {
-    const id = formData.get('id')?.toString().trim();
-    if (!id) throw new Error('ID berita wajib diisi.');
+    const { id } = parseFormData(formData, deleteBeritaSchema);
 
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error('DATABASE_URL tidak ditemukan.');
-
-    const sql = neon(databaseUrl);
+    const sql = getDb();
     await sql`DELETE FROM berita WHERE id = ${id}`;
 
     revalidatePath('/berita');

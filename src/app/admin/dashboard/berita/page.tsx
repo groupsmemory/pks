@@ -1,5 +1,6 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import { BeritaForm, BeritaDeleteForm } from './BeritaClient';
+import EmptyState from '@/src/components/EmptyState';
 
 interface BeritaRow {
   id: string;
@@ -10,10 +11,9 @@ interface BeritaRow {
 }
 
 async function getBeritaList(): Promise<BeritaRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, slug, author, published_at
     FROM berita ORDER BY published_at DESC LIMIT 100
@@ -36,9 +36,10 @@ export default async function AdminBeritaPage() {
       <BeritaForm />
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada berita.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada berita."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">

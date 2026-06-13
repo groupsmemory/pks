@@ -1,23 +1,19 @@
 'use server';
 
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import { revalidatePath } from 'next/cache';
+import { parseFormData } from '@/src/validations/helpers';
+import { createGaleriSchema, deleteGaleriSchema } from '@/src/validations/cms/galeri';
 
 export async function createGaleri(formData: FormData) {
   try {
-    const title = formData.get('title')?.toString().trim();
-    const description = formData.get('description')?.toString().trim() || null;
-    const image_url = formData.get('image_url')?.toString().trim();
-    const category = formData.get('category')?.toString().trim() || 'Umum';
+    const data = parseFormData(formData, createGaleriSchema);
+    const title = data.title;
+    const image_url = data.image_url;
+    const description = data.description || null;
+    const category = data.category || 'Umum';
 
-    if (!title || !image_url) {
-      throw new Error('Judul dan URL gambar wajib diisi.');
-    }
-
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error('DATABASE_URL tidak ditemukan.');
-
-    const sql = neon(databaseUrl);
+    const sql = getDb();
     await sql`
       INSERT INTO galeri (title, description, image_url, category)
       VALUES (${title}, ${description}, ${image_url}, ${category})
@@ -36,13 +32,9 @@ export async function createGaleri(formData: FormData) {
 
 export async function deleteGaleri(formData: FormData) {
   try {
-    const id = formData.get('id')?.toString().trim();
-    if (!id) throw new Error('ID galeri wajib diisi.');
+    const { id } = parseFormData(formData, deleteGaleriSchema);
 
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) throw new Error('DATABASE_URL tidak ditemukan.');
-
-    const sql = neon(databaseUrl);
+    const sql = getDb();
     await sql`DELETE FROM galeri WHERE id = ${id}`;
 
     revalidatePath('/galeri');

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import EmptyState from '@/src/components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Berita — DPD PKS Pamekasan',
@@ -18,10 +19,9 @@ interface BeritaRow {
 }
 
 async function getBeritaList(): Promise<BeritaRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, slug, excerpt, image_url, author, published_at
     FROM berita ORDER BY published_at DESC LIMIT 50
@@ -39,9 +39,7 @@ export default async function BeritaPage() {
         <p className="text-gray-600 mb-8">Informasi dan rilis pers terbaru DPD PKS Pamekasan</p>
 
         {data.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-            <p className="text-gray-500 text-lg">Belum ada berita.</p>
-          </div>
+          <EmptyState message="Belum ada berita." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.map((item) => (

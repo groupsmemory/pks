@@ -20,7 +20,7 @@ export function getSnapClient() {
 }
 
 /**
- * Midtrans Core API client untuk verifikasi notifikasi webhook.
+ * Midtrans Core API client untuk verifikasi notifikasi webhook & cancel transaksi.
  */
 export function getCoreApiClient() {
   const serverKey = process.env.MIDTRANS_SERVER_KEY;
@@ -35,4 +35,17 @@ export function getCoreApiClient() {
     serverKey,
     clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
   });
+}
+
+/**
+ * Membatalkan transaksi Midtrans yang masih berstatus pending/challenge.
+ * Dipanggil jika penyimpanan ke database gagal setelah transaksi Midtrans berhasil dibuat.
+ */
+export async function cancelMidtransTransaction(orderId: string): Promise<void> {
+  try {
+    const coreApi = getCoreApiClient();
+    await coreApi.transaction.cancel(orderId);
+  } catch (error) {
+    console.error(`[Midtrans] Gagal membatalkan transaksi ${orderId}:`, error);
+  }
 }

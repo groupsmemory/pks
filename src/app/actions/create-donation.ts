@@ -1,19 +1,13 @@
 'use server';
 
 import { headers } from 'next/headers';
-import { neon } from '@neondatabase/serverless';
-import { getSnapClient } from '@/src/lib/midtrans';
+import { getDb } from '@/src/lib/db';
+import { getSnapClient, cancelMidtransTransaction } from '@/src/lib/midtrans';
+import { parseFormData } from '@/src/validations/helpers';
+import { donasiSchema } from '@/src/validations/donasi';
+import { JENIS_DONASI } from '@/src/validations/index';
 
-const PAMEKASAN_KECAMATAN = [
-  'Batumarmar', 'Galis', 'Kadur', 'Larangan', 'Pademawu',
-  'Pakong', 'Palengaan', 'Pamekasan', 'Pasean', 'Pegantenan',
-  'Proppo', 'Tlanakan', 'Waru',
-] as const;
-
-const JENIS_DONASI = ['INFAK_UMUM', 'INFAK_DAKWAH', 'INFAK_SOSIAL', 'INFAK_PENDIDIKAN'] as const;
-
-type Kecamatan = typeof PAMEKASAN_KECAMATAN[number];
-type JenisDonasi = typeof JENIS_DONASI[number];
+export type JenisDonasi = typeof JENIS_DONASI[number];
 
 const JENIS_DONASI_LABEL: Record<JenisDonasi, string> = {
   INFAK_UMUM: 'Infak Umum',
@@ -36,34 +30,10 @@ export async function createDonation(formData: FormData) {
 
   try {
     // Extract & validate form data
-    const nama_donatur = formData.get('nama_donatur')?.toString().trim();
-    const email = formData.get('email')?.toString().trim() || null;
-    const nomor_whatsapp = formData.get('nomor_whatsapp')?.toString().trim();
-    const kecamatan = formData.get('kecamatan')?.toString().trim();
-    const jenis_donasi = formData.get('jenis_donasi')?.toString().trim();
-    const jumlah_donasi_str = formData.get('jumlah_donasi')?.toString().trim();
-    const pesan_donatur = formData.get('pesan_donatur')?.toString().trim() || null;
-
-    if (!nama_donatur || !nomor_whatsapp || !kecamatan || !jenis_donasi || !jumlah_donasi_str) {
-      throw new Error('Validasi gagal: Semua field wajib harus diisi.');
-    }
-
-    const jumlah_donasi = parseInt(jumlah_donasi_str, 10);
-    if (isNaN(jumlah_donasi) || jumlah_donasi < 10000) {
-      throw new Error('Validasi gagal: Minimal donasi adalah Rp 10.000.');
-    }
-
-    if (jumlah_donasi > 100000000) {
-      throw new Error('Validasi gagal: Maksimal donasi per transaksi adalah Rp 100.000.000.');
-    }
-
-    if (!PAMEKASAN_KECAMATAN.includes(kecamatan as Kecamatan)) {
-      throw new Error('Validasi gagal: Kecamatan tidak valid.');
-    }
-
-    if (!JENIS_DONASI.includes(jenis_donasi as JenisDonasi)) {
-      throw new Error('Validasi gagal: Jenis donasi tidak valid.');
-    }
+    const data = parseFormData(formData, donasiSchema);
+    const { nama_donatur, nomor_whatsapp, kecamatan, jenis_donasi, jumlah_donasi } = data;
+    const email = data.email || null;
+    const pesan_donatur = data.pesan_donatur || null;
 
     // Generate unique order ID
     const timestamp = Date.now();
@@ -83,7 +53,7 @@ export async function createDonation(formData: FormData) {
           id: jenis_donasi,
           price: jumlah_donasi,
           quantity: 1,
-          name: `${JENIS_DONASI_LABEL[jenis_donasi as JenisDonasi]} - DPD PKS Pamekasan`,
+          name: `${JENIS_DONASI_LABEL[jenis_donasi]} - DPD PKS Pamekasan`,
         },
       ],
       customer_details: {
@@ -98,43 +68,45 @@ export async function createDonation(formData: FormData) {
 
     const snapResponse = await snap.createTransaction(transactionParams);
 
-    // Save to NeonDB
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error('Konfigurasi gagal: DATABASE_URL tidak ditemukan.');
+    // Save to NeonDB dalam transaction — rollback Midtrans jika gagal
+    const sql = getDb();
+
+    try {
+      await sql.transaction([
+        sql`
+          INSERT INTO donasi (
+            order_id,
+            nama_donatur,
+            email,
+            nomor_whatsapp,
+            kecamatan,
+            jenis_donasi,
+            jumlah_donasi,
+            pesan_donatur,
+            midtrans_status,
+            snap_token,
+            snap_redirect_url,
+            ip_address
+          ) VALUES (
+            ${order_id},
+            ${nama_donatur},
+            ${email},
+            ${nomor_whatsapp},
+            ${kecamatan},
+            ${jenis_donasi},
+            ${jumlah_donasi},
+            ${pesan_donatur},
+            'PENDING',
+            ${snapResponse.token},
+            ${snapResponse.redirect_url},
+            ${ipAddress}
+          )
+        `,
+      ]);
+    } catch (dbError) {
+      await cancelMidtransTransaction(order_id);
+      throw dbError;
     }
-
-    const sql = neon(databaseUrl);
-
-    await sql`
-      INSERT INTO donasi (
-        order_id,
-        nama_donatur,
-        email,
-        nomor_whatsapp,
-        kecamatan,
-        jenis_donasi,
-        jumlah_donasi,
-        pesan_donatur,
-        midtrans_status,
-        snap_token,
-        snap_redirect_url,
-        ip_address
-      ) VALUES (
-        ${order_id},
-        ${nama_donatur},
-        ${email},
-        ${nomor_whatsapp},
-        ${kecamatan},
-        ${jenis_donasi},
-        ${jumlah_donasi},
-        ${pesan_donatur},
-        'PENDING',
-        ${snapResponse.token},
-        ${snapResponse.redirect_url},
-        ${ipAddress}
-      )
-    `;
 
     return {
       success: true,

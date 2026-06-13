@@ -193,3 +193,36 @@ CREATE TABLE galeri (
 
 CREATE INDEX idx_galeri_category ON galeri USING btree (category);
 CREATE INDEX idx_galeri_created_at ON galeri USING btree (created_at DESC);
+
+-- =============================================================================
+-- DAPIL ROUTING: Pemetaan kecamatan ke staf DPRD
+-- =============================================================================
+
+CREATE TABLE dapil_routing (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    kecamatan VARCHAR(50) NOT NULL UNIQUE CHECK (
+        kecamatan IN (
+            'Batumarmar', 'Galis', 'Kadur', 'Larangan', 'Pademawu',
+            'Pakong', 'Palengaan', 'Pamekasan', 'Pasean', 'Pegantenan',
+            'Proppo', 'Tlanakan', 'Waru'
+        )
+    ),
+    dapil VARCHAR(20) NOT NULL,
+    assigned_to VARCHAR(100) NOT NULL,
+    staff_phone VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_dapil_routing_kecamatan ON dapil_routing USING btree (kecamatan);
+
+INSERT INTO dapil_routing (kecamatan, dapil, assigned_to, staff_phone) VALUES
+    ('Pamekasan',  'Dapil 1', 'Staf Ahli Suryono (Dapil 1)',     '6281111111111'),
+    ('Tlanakan',   'Dapil 1', 'Staf Ahli Suryono (Dapil 1)',     '6281111111111'),
+    ('Proppo',     'Dapil 2', 'Staf Ahli H. Imam Ghozali (Dapil 2)', '6282222222222'),
+    ('Palengaan',  'Dapil 2', 'Staf Ahli H. Imam Ghozali (Dapil 2)', '6282222222222'),
+    ('Batumarmar', 'Dapil 3', 'Staf Ahli Juma''ah (Dapil 3)',     '6283333333333'),
+    ('Pasean',     'Dapil 3', 'Staf Ahli Juma''ah (Dapil 3)',     '6283333333333'),
+    ('Waru',       'Dapil 3', 'Staf Ahli Juma''ah (Dapil 3)',     '6283333333333'),
+    ('Galis',      'Dapil 5', 'Staf Ahli Ita Kusmita (Dapil 5)',  '6285555555555'),
+    ('Larangan',   'Dapil 5', 'Staf Ahli Ita Kusmita (Dapil 5)',  '6285555555555'),
+    ('Pademawu',   'Dapil 5', 'Staf Ahli Ita Kusmita (Dapil 5)',  '6285555555555');

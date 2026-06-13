@@ -1,25 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { loginSchema, type LoginInput } from '@/src/validations/cms/login';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginInput) => {
     setError(null);
     setIsLoading(true);
 
     try {
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       });
 
@@ -64,7 +72,7 @@ export default function AdminLoginPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
               <label htmlFor="admin-email" className="block font-bold text-sm text-gray-800">
                 Email Admin
@@ -72,13 +80,12 @@ export default function AdminLoginPage() {
               <input
                 type="email"
                 id="admin-email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register('email')}
                 autoComplete="email"
                 placeholder="admin@pkspamekasan.id"
                 className="w-full min-h-[44px] px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all"
               />
+              {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -88,13 +95,12 @@ export default function AdminLoginPage() {
               <input
                 type="password"
                 id="admin-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register('password')}
                 autoComplete="current-password"
                 placeholder="Masukkan password"
                 className="w-full min-h-[44px] px-4 py-3 rounded-lg border-2 border-gray-300 text-gray-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all"
               />
+              {errors.password && <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             <button

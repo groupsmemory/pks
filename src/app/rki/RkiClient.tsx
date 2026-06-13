@@ -1,68 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-
-interface ModulItem {
-  id: string;
-  judul: string;
-  kategori: string;
-  ringkasan: string;
-  poinPembelajaran: string[];
-  narasumber: string;
-  durasi: string;
-}
-
-interface JadwalItem {
-  id: string;
-  judul: string;
-  hari: string;
-  waktu: string;
-  lokasi: string;
-  metode: string;
-  konselor: string;
-}
+import React, { useState, useMemo } from 'react';
+import { KATEGORI_OPTIONS, KATEGORI_BADGE } from '@/src/data/rki';
+import { useAccessibility } from '@/src/hooks/useAccessibility';
+import type { ModulItem, JadwalItem } from '@/src/data/rki';
 
 interface RkiClientProps {
   modulData: ModulItem[];
   jadwalData: JadwalItem[];
 }
 
-const KATEGORI_OPTIONS = [
-  { value: '', label: 'Semua Kategori' },
-  { value: 'PARENTING', label: 'Parenting Islami' },
-  { value: 'EKONOMI', label: 'Ekonomi Keluarga' },
-  { value: 'KONSELING', label: 'Konseling' },
-  { value: 'KESEHATAN', label: 'Kesehatan' },
-];
-
-const KATEGORI_BADGE: Record<string, string> = {
-  PARENTING: 'bg-pink-100 text-pink-800',
-  EKONOMI: 'bg-green-100 text-green-800',
-  KONSELING: 'bg-blue-100 text-blue-800',
-  KESEHATAN: 'bg-purple-100 text-purple-800',
-};
-
 export default function RkiClient({ modulData, jadwalData }: RkiClientProps) {
-  const [isHighContrast, setIsHighContrast] = useState(false);
   const [filterKategori, setFilterKategori] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'modul' | 'jadwal'>('modul');
 
-  useEffect(() => {
-    const rootHasContrast = document.documentElement.classList.contains('high-contrast');
-    setIsHighContrast(rootHasContrast);
-
-    const observer = new MutationObserver(() => {
-      setIsHighContrast(document.documentElement.classList.contains('high-contrast'));
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const { isHighContrast } = useAccessibility();
 
   const filteredModul = useMemo(() => {
     return modulData.filter((item) => {

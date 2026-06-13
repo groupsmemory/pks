@@ -1,12 +1,11 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/src/lib/auth';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 
 async function getDashboardStats() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return { aspirasi: 0, kta: 0, donasi: 0, berita: 0, agenda: 0, galeri: 0 };
+  if (!process.env.DATABASE_URL) return { aspirasi: 0, kta: 0, donasi: 0, berita: 0, agenda: 0, galeri: 0 };
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
 
   const [aspirasiRows, ktaRows, donasiRows, beritaRows, agendaRows, galeriRows] = await Promise.all([
     sql`SELECT COUNT(*) as total FROM aspirasi`,

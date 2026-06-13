@@ -1,4 +1,6 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import { formatRupiah } from '@/src/lib/utils';
+import EmptyState from '@/src/components/EmptyState';
 
 interface DonasiRow {
   id: string;
@@ -14,10 +16,9 @@ interface DonasiRow {
 }
 
 async function getDonasiList(): Promise<DonasiRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
 
   const rows = await sql`
     SELECT id, order_id, nama_donatur, kecamatan, jenis_donasi, jumlah_donasi,
@@ -28,14 +29,6 @@ async function getDonasiList(): Promise<DonasiRow[]> {
   `;
 
   return rows as DonasiRow[];
-}
-
-function formatRupiah(num: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(num);
 }
 
 const JENIS_LABEL: Record<string, string> = {
@@ -62,9 +55,10 @@ export default async function DonasiAdminPage() {
       </div>
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada transaksi donasi.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada transaksi donasi."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm" aria-label="Tabel riwayat donasi">

@@ -1,7 +1,8 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
+import { loginSchema } from '@/src/validations/cms/login';
+import { getDb } from '@/src/lib/db';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,21 +13,18 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) {
           throw new Error('Email dan password wajib diisi.');
         }
+        const { email, password } = parsed.data;
 
-        const databaseUrl = process.env.DATABASE_URL;
-        if (!databaseUrl) {
-          throw new Error('DATABASE_URL tidak dikonfigurasi.');
-        }
-
-        const sql = neon(databaseUrl);
+        const sql = getDb();
 
         const rows = await sql`
           SELECT id, nama, email, password_hash, role, is_active
           FROM admin_users
-          WHERE email = ${credentials.email}
+          WHERE email = ${email}
           LIMIT 1
         `;
 
@@ -40,14 +38,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Akun Anda telah dinonaktifkan. Hubungi Super Admin.');
         }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
         if (!isPasswordValid) {
           throw new Error('Email atau password salah.');
         }
 
         // Update last_login
-        await sql`
+        await getDb()`
           UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ${user.id}
         `;
 

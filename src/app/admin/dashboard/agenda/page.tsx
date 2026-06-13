@@ -1,5 +1,6 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import { AgendaForm, AgendaDeleteForm } from './AgendaClient';
+import EmptyState from '@/src/components/EmptyState';
 
 interface AgendaRow {
   id: string;
@@ -10,10 +11,9 @@ interface AgendaRow {
 }
 
 async function getAgendaList(): Promise<AgendaRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, slug, date, location
     FROM agenda ORDER BY date DESC LIMIT 100
@@ -36,9 +36,10 @@ export default async function AdminAgendaPage() {
       <AgendaForm />
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada agenda.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada agenda."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">

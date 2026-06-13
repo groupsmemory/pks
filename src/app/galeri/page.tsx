@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import EmptyState from '@/src/components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Galeri — DPD PKS Pamekasan',
@@ -16,10 +17,9 @@ interface GaleriRow {
 }
 
 async function getGaleriList(): Promise<GaleriRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
   const rows = await sql`
     SELECT id, title, description, image_url, category, created_at
     FROM galeri ORDER BY created_at DESC LIMIT 100
@@ -39,9 +39,7 @@ export default async function GaleriPage() {
         <p className="text-gray-600 mb-8">Dokumentasi foto kegiatan DPD PKS Pamekasan</p>
 
         {data.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
-            <p className="text-gray-500 text-lg">Belum ada galeri.</p>
-          </div>
+          <EmptyState message="Belum ada galeri." />
         ) : (
           <>
             {categories.map((cat) => {

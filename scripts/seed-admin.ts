@@ -2,7 +2,7 @@
  * Script untuk membuat admin user pertama.
  * Jalankan dengan: npx tsx scripts/seed-admin.ts
  *
- * Pastikan .env.local sudah berisi DATABASE_URL yang valid.
+ * Pastikan .env.local sudah berisi DATABASE_URL dan ADMIN_SEED_PASSWORD.
  */
 
 import { neon } from '@neondatabase/serverless';
@@ -18,11 +18,15 @@ async function seedAdmin() {
     process.exit(1);
   }
 
+  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
+  if (!adminPassword || adminPassword.length < 8) {
+    console.error('ERROR: ADMIN_SEED_PASSWORD tidak ditemukan atau terlalu pendek (min. 8 karakter) di .env.local');
+    process.exit(1);
+  }
+
   const sql = neon(databaseUrl);
 
-  // Data admin default — GANTI PASSWORD SEBELUM DEPLOY KE PRODUCTION!
   const adminEmail = 'admin@pkspamekasan.id';
-  const adminPassword = 'PKS_Pamekasan_2025!';
   const adminNama = 'Admin Humas KOMDIGI';
 
   // Cek apakah admin sudah ada

@@ -1,4 +1,5 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import EmptyState from '@/src/components/EmptyState';
 
 interface KtaRow {
   id: string;
@@ -10,10 +11,9 @@ interface KtaRow {
 }
 
 async function getKtaList(): Promise<KtaRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
 
   const rows = await sql`
     SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, status_verifikasi, created_at
@@ -42,9 +42,10 @@ export default async function KtaAdminPage() {
       </div>
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada pendaftar KTA.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada pendaftar KTA."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm" aria-label="Tabel pendaftar KTA">

@@ -9,9 +9,9 @@ export const metadata: Metadata = {
     template: '%s — DPD PKS Pamekasan',
   },
   description:
-    'Portal resmi DPD PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+    'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
   keywords: ['PKS', 'Pamekasan', 'aspirasi', 'KTA', 'dakwah', 'sowan kyai', 'DPD PKS', 'berita', 'agenda', 'galeri'],
-  authors: [{ name: 'DPD PKS Kabupaten Pamekasan' }],
+  authors: [{ name: 'Dewan Pengurus Daerah PKS Kabupaten Pamekasan' }],
 };
 
 // Script pencegah layout flash: membaca preferensi aksesibilitas dari localStorage

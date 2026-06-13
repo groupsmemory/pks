@@ -1,4 +1,5 @@
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
+import EmptyState from '@/src/components/EmptyState';
 
 interface AspirasiRow {
   id: string;
@@ -11,10 +12,9 @@ interface AspirasiRow {
 }
 
 async function getAspirasiList(): Promise<AspirasiRow[]> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) return [];
+  if (!process.env.DATABASE_URL) return [];
 
-  const sql = neon(databaseUrl);
+  const sql = getDb();
 
   const rows = await sql`
     SELECT id, nama_pelapor, kecamatan, isi_aspirasi, status_aspirasi, assigned_to, created_at
@@ -39,9 +39,10 @@ export default async function AspirasiAdminPage() {
       </div>
 
       {data.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
-          <p className="text-gray-500">Belum ada aspirasi yang masuk.</p>
-        </div>
+        <EmptyState
+          variant="admin"
+          message="Belum ada aspirasi yang masuk."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm" aria-label="Tabel log aspirasi">

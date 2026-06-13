@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { getDb } from '@/src/lib/db';
 import crypto from 'crypto';
 
 /**
@@ -74,16 +74,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Update database
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      console.error('[Midtrans Webhook] DATABASE_URL not configured');
-      return NextResponse.json(
-        { error: 'Database configuration error' },
-        { status: 500 }
-      );
-    }
+    const sql = getDb();
 
-    const sql = neon(databaseUrl);
+    // Idempotency — cek apakah notifikasi duplikat (transaction_id + status sama)
+    const rows = await sql`
+      SELECT midtrans_transaction_id, midtrans_status FROM donasi WHERE order_id = ${order_id}
+    `;
+
+    const existingRecord = rows[0] as
+      { midtrans_transaction_id: string | null; midtrans_status: string | null } | undefined;
+
+    if (
+      existingRecord?.midtrans_transaction_id === transaction_id &&
+      existingRecord?.midtrans_status === finalStatus
+    ) {
+      console.log(
+        `[Midtrans Webhook] Duplicate notification for ${order_id} ` +
+        `(transaction: ${transaction_id}, status: ${finalStatus}), skipping`
+      );
+      return NextResponse.json({ status: 'ok' });
+    }
 
     const isSettled = finalStatus === 'SETTLEMENT' || finalStatus === 'CAPTURE';
 
