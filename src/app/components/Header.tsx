@@ -5,15 +5,23 @@ import Link from 'next/link';
 
 const NAV_LINKS = [
   { href: '/', label: 'Beranda' },
-  { href: '/profil', label: 'Profil Ketua' },
+  { href: '/profil', label: 'Profil Partai' },
+  { href: '/berita', label: 'Berita' },
+  { href: '/agenda', label: 'Agenda' },
+  { href: '/galeri', label: 'Galeri' },
+  { href: '/kontak', label: 'Kontak' },
+];
+
+const LAYANAN_LINKS = [
   { href: '/sowan-kyai', label: 'Sowan Kyai' },
   { href: '/rki', label: 'RKI BIPEKA' },
-  { href: '/donasi', label: 'Donasi' },
+  { href: '/donasi', label: 'Donasi & Infak' },
 ];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
+  const [isLayananOpen, setIsLayananOpen] = useState(false);
 
   useEffect(() => {
     const rootHasContrast = document.documentElement.classList.contains('high-contrast');
@@ -79,6 +87,41 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Layanan Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setIsLayananOpen(true)}
+              onMouseLeave={() => setIsLayananOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setIsLayananOpen(!isLayananOpen)}
+                className={`min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-4 flex items-center gap-1 ${linkClass}`}
+                aria-expanded={isLayananOpen}
+                aria-haspopup="true"
+              >
+                Layanan
+                <span aria-hidden="true" className="text-xs">{isLayananOpen ? '▲' : '▼'}</span>
+              </button>
+
+              {isLayananOpen && (
+                <div className={`absolute right-0 top-full mt-1 w-56 rounded-xl border shadow-lg overflow-hidden ${isHighContrast ? 'bg-[#000000] border-[#FFFF00]' : 'bg-white border-gray-200'}`}>
+                  <div className="py-2">
+                    {LAYANAN_LINKS.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setIsLayananOpen(false)}
+                        className={`block min-h-[44px] px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-4 ${linkClass}`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Mobile Hamburger */}
@@ -104,6 +147,20 @@ export default function Header() {
         >
           <div className="px-4 py-4 space-y-1">
             {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`block min-h-[44px] px-4 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 ${linkClass}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="border-t border-current opacity-20 my-2" />
+            <p className={`px-4 py-2 text-xs font-bold uppercase tracking-wider ${isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500'}`}>
+              Layanan
+            </p>
+            {LAYANAN_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

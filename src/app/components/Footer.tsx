@@ -61,22 +61,27 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/profil" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
-                  Profil Ketua Umum
+                  Profil Partai
                 </Link>
               </li>
               <li>
-                <Link href="/sowan-kyai" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
-                  Sowan Kyai
+                <Link href="/berita" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
+                  Berita
                 </Link>
               </li>
               <li>
-                <Link href="/rki" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
-                  RKI BIPEKA
+                <Link href="/agenda" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
+                  Agenda
                 </Link>
               </li>
               <li>
-                <Link href="/donasi" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
-                  Donasi &amp; Infak
+                <Link href="/galeri" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
+                  Galeri
+                </Link>
+              </li>
+              <li>
+                <Link href="/kontak" className={`text-sm min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-1 ${linkClass}`}>
+                  Kontak
                 </Link>
               </li>
             </ul>
@@ -107,6 +112,14 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-10 pt-6 border-t border-current opacity-60 text-center text-sm">
+          <div className="flex flex-wrap justify-center gap-4 mb-3">
+            <Link href="/kebijakan-privasi" className={`min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-2 ${linkClass}`}>
+              Kebijakan Privasi
+            </Link>
+            <Link href="/syarat-ketentuan" className={`min-h-[44px] inline-flex items-center focus:outline-none focus:ring-4 rounded px-2 ${linkClass}`}>
+              Syarat &amp; Ketentuan
+            </Link>
+          </div>
           <p>
             &copy; {new Date().getFullYear()} DPD PKS Kabupaten Pamekasan. Hak cipta dilindungi.
           </p>

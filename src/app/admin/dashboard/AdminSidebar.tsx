@@ -13,6 +13,9 @@ const MENU_ITEMS = [
   { href: '/admin/dashboard/aspirasi', label: 'Log Aspirasi', icon: '📝' },
   { href: '/admin/dashboard/kta', label: 'Pendaftar KTA', icon: '🪪' },
   { href: '/admin/dashboard/donasi', label: 'Riwayat Donasi', icon: '💰' },
+  { href: '/admin/dashboard/berita', label: 'Kelola Berita', icon: '📰' },
+  { href: '/admin/dashboard/agenda', label: 'Kelola Agenda', icon: '🗓️' },
+  { href: '/admin/dashboard/galeri', label: 'Kelola Galeri', icon: '🖼️' },
 ];
 
 export default function AdminSidebar({ userName }: AdminSidebarProps) {

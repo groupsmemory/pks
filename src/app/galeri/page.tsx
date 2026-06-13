@@ -1,0 +1,83 @@
+import type { Metadata } from 'next';
+import { neon } from '@neondatabase/serverless';
+
+export const metadata: Metadata = {
+  title: 'Galeri — DPD PKS Pamekasan',
+  description: 'Galeri foto dan dokumentasi kegiatan DPD PKS Kabupaten Pamekasan.',
+};
+
+interface GaleriRow {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+  category: string;
+  created_at: string;
+}
+
+async function getGaleriList(): Promise<GaleriRow[]> {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return [];
+
+  const sql = neon(databaseUrl);
+  const rows = await sql`
+    SELECT id, title, description, image_url, category, created_at
+    FROM galeri ORDER BY created_at DESC LIMIT 100
+  `;
+  return rows as GaleriRow[];
+}
+
+export default async function GaleriPage() {
+  const data = await getGaleriList();
+
+  const categories = [...new Set(data.map((item) => item.category))];
+
+  return (
+    <main className="min-h-screen">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 className="text-[1.75em] sm:text-[2.25em] font-extrabold mb-2">Galeri</h1>
+        <p className="text-gray-600 mb-8">Dokumentasi foto kegiatan DPD PKS Pamekasan</p>
+
+        {data.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-12 text-center">
+            <p className="text-gray-500 text-lg">Belum ada galeri.</p>
+          </div>
+        ) : (
+          <>
+            {categories.map((cat) => {
+              const items = data.filter((item) => item.category === cat);
+              return (
+                <section key={cat} className="mb-10">
+                  <h2 className="text-[1.25em] font-bold mb-4">{cat}</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
+                      >
+                        <div className="aspect-square bg-gray-100 overflow-hidden">
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="p-3">
+                          <p className="font-medium text-sm truncate">{item.title}</p>
+                          {item.description && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">{item.description}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}

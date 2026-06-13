@@ -136,3 +136,60 @@ CREATE TABLE admin_users (
 
 CREATE INDEX idx_admin_users_email ON admin_users USING btree (email);
 CREATE INDEX idx_admin_users_role ON admin_users USING btree (role);
+
+-- =============================================================================
+-- CMS BERITA / ARTIKEL
+-- =============================================================================
+
+CREATE TABLE berita (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    content TEXT NOT NULL,
+    excerpt TEXT,
+    image_url TEXT,
+    author VARCHAR(150) NOT NULL DEFAULT 'Humas DPD PKS Pamekasan',
+    published_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_berita_slug ON berita USING btree (slug);
+CREATE INDEX idx_berita_published_at ON berita USING btree (published_at DESC);
+
+-- =============================================================================
+-- CMS AGENDA / KEGIATAN
+-- =============================================================================
+
+CREATE TABLE agenda (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    date DATE NOT NULL,
+    time_start TIME,
+    time_end TIME,
+    location VARCHAR(255),
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_agenda_slug ON agenda USING btree (slug);
+CREATE INDEX idx_agenda_date ON agenda USING btree (date DESC);
+
+-- =============================================================================
+-- CMS GALERI FOTO
+-- =============================================================================
+
+CREATE TABLE galeri (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    image_url TEXT NOT NULL,
+    category VARCHAR(100) DEFAULT 'Umum',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_galeri_category ON galeri USING btree (category);
+CREATE INDEX idx_galeri_created_at ON galeri USING btree (created_at DESC);

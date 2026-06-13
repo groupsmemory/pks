@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Profil Ketua Umum Mohammad Alim, S.Ag. — DPD PKS Pamekasan',
+  title: 'Profil Partai — DPD PKS Pamekasan',
   description:
-    'Biografi resmi Ketua Umum DPD PKS Kabupaten Pamekasan, Mohammad Alim, S.Ag. Visi kepemimpinan, riwayat khidmah kemasyarakatan, dan komitmen dakwah politik.',
+    'Profil resmi DPD PKS Kabupaten Pamekasan. Sejarah partai, visi dan misi, struktur kepengurusan, serta profil Ketua Umum Mohammad Alim, S.Ag.',
 };
 
 // Data profil statis — SSG, tidak memerlukan fetch runtime
@@ -52,14 +52,122 @@ const profilData = {
   ],
 };
 
+const partyData = {
+  namaPartai: 'DPD PKS Kabupaten Pamekasan',
+  singkatan: 'DPD PKS Pamekasan',
+  alamat: 'Jl. Patemon, Kabupaten Pamekasan, Jawa Timur',
+  visi: 'Terwujudnya masyarakat Pamekasan yang religius, sejahtera, dan berkeadilan dalam bingkai Negara Kesatuan Republik Indonesia.',
+  misi: [
+    'Memperkuat dakwah politik yang berlandaskan nilai-nilai keislaman dan kebangsaan.',
+    'Mendorong tata kelola pemerintahan yang bersih, transparan, dan partisipatif.',
+    'Memperjuangkan keadilan ekonomi melalui pemberdayaan UMKM dan sektor riil.',
+    'Membangun kader partai yang berintegritas, kompeten, dan dekat dengan rakyat.',
+    'Menjalin silaturahmi dengan ulama, tokoh masyarakat, dan seluruh elemen bangsa.',
+  ],
+  sejarah: [
+    { tahun: '2000', peristiwa: 'Pendirian PKS (saat itu PK) di tingkat nasional' },
+    { tahun: '2004', peristiwa: 'Pembentukan struktur DPD PKS Kabupaten Pamekasan' },
+    { tahun: '2009', peristiwa: 'Perolehan kursi pertama di DPRD Kabupaten Pamekasan' },
+    { tahun: '2019', peristiwa: 'Pencapaian kursi terbanyak di DPRD Pamekasan' },
+    { tahun: '2024', peristiwa: 'Mempertahankan 4 kursi di DPRD Kabupaten Pamekasan' },
+    { tahun: '2025', peristiwa: 'Musyawarah Daerah (Musda) V dan kepemimpinan baru' },
+  ],
+  struktur: [
+    { jabatan: 'Ketua Umum', nama: 'Mohammad Alim, S.Ag.' },
+    { jabatan: 'Sekretaris', nama: '(dalam proses)' },
+    { jabatan: 'Bendahara', nama: '(dalam proses)' },
+    { jabatan: 'Ketua MPD', nama: '(dalam proses)' },
+    { jabatan: 'Dewan Pakar', nama: '8 Anggota' },
+  ],
+};
+
 export default function ProfilPage() {
   return (
     <main className="min-h-screen">
       <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Hero Section */}
-        <section className="mb-12" aria-labelledby="profil-heading">
+        {/* Header Partai */}
+        <section className="mb-12 text-center" aria-labelledby="partai-heading">
+          <h1
+            id="partai-heading"
+            className="text-[2em] sm:text-[2.5em] font-extrabold mb-2"
+          >
+            {partyData.namaPartai}
+          </h1>
+          <p className="text-gray-600">{partyData.alamat}</p>
+        </section>
+
+        {/* Visi & Misi Partai */}
+        <section className="mb-10" aria-labelledby="visi-partai-heading">
+          <h2 id="visi-partai-heading" className="text-[1.5em] font-bold mb-4 border-b pb-2 border-current">
+            Visi &amp; Misi Partai
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-bold text-[1.125em] mb-2">Visi</h3>
+              <p className="leading-relaxed">{partyData.visi}</p>
+            </div>
+            <div>
+              <h3 className="font-bold text-[1.125em] mb-2">Misi</h3>
+              <ol className="list-decimal list-inside space-y-2">
+                {partyData.misi.map((item, index) => (
+                  <li key={index} className="leading-relaxed">{item}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        {/* Sejarah Partai */}
+        <section className="mb-10" aria-labelledby="sejarah-partai-heading">
+          <h2 id="sejarah-partai-heading" className="text-[1.5em] font-bold mb-4 border-b pb-2 border-current">
+            Sejarah Partai
+          </h2>
+          <div className="space-y-4">
+            {partyData.sejarah.map((item, index) => (
+              <div key={index} className="flex items-start gap-4">
+                <span className="inline-block min-w-[70px] px-2 py-1 text-sm font-bold text-center bg-blue-100 text-blue-800 rounded">
+                  {item.tahun}
+                </span>
+                <p className="leading-relaxed">{item.peristiwa}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Struktur Kepengurusan */}
+        <section className="mb-10" aria-labelledby="struktur-heading">
+          <h2 id="struktur-heading" className="text-[1.5em] font-bold mb-4 border-b pb-2 border-current">
+            Struktur Kepengurusan
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left" aria-label="Struktur pengurus DPD PKS Pamekasan">
+              <thead>
+                <tr className="border-b-2 border-current">
+                  <th scope="col" className="py-3 px-4 font-bold">Jabatan</th>
+                  <th scope="col" className="py-3 px-4 font-bold">Nama</th>
+                </tr>
+              </thead>
+              <tbody>
+                {partyData.struktur.map((item, index) => (
+                  <tr key={index} className="border-b border-gray-200">
+                    <td className="py-3 px-4 font-medium">{item.jabatan}</td>
+                    <td className="py-3 px-4">{item.nama}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Divider */}
+        <hr className="my-12 border-current opacity-20" />
+
+        {/* ===== Profil Ketua Umum ===== */}
+        <section className="mb-12" aria-labelledby="ketua-heading">
+          <h2 id="ketua-heading" className="text-[1.5em] font-bold mb-4 border-b pb-2 border-current">
+            Profil Ketua Umum
+          </h2>
           <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Photo Placeholder */}
             <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-8 sm:p-12 text-white text-center">
               <div
                 className="w-32 h-32 sm:w-40 sm:h-40 mx-auto rounded-full bg-white/20 border-4 border-white/50 flex items-center justify-center mb-6"
@@ -68,14 +176,13 @@ export default function ProfilPage() {
               >
                 <span className="text-[3em] sm:text-[4em]" aria-hidden="true">👤</span>
               </div>
-              <h1 id="profil-heading" className="text-[1.75em] sm:text-[2.25em] font-extrabold leading-tight">
+              <h3 className="text-[1.75em] sm:text-[2.25em] font-extrabold leading-tight">
                 {profilData.namaLengkap}
-              </h1>
+              </h3>
               <p className="text-[1.125em] mt-2 opacity-90">{profilData.jabatan}</p>
               <p className="text-sm mt-1 opacity-75">Periode {profilData.periode}</p>
             </div>
 
-            {/* Kutipan */}
             <div className="bg-gray-50 border-b border-gray-200 px-6 sm:px-8 py-6">
               <blockquote className="text-center italic text-[1.125em] leading-relaxed">
                 {profilData.kutipan}

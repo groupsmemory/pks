@@ -47,8 +47,10 @@ Peta Jalan Eksekusi
 - [ ] Deploy to production
 
 ## Fase 5: Pasca-MVP (Future)
-- [ ] Berita/artikel CMS
-- [ ] Galeri foto
+- [x] Berita/artikel CMS (done)
+- [x] Galeri foto (done)
+- [x] Agenda kegiatan (done)
+- [x] Halaman statis: Kontak, Kebijakan Privasi, Syarat & Ketentuan (done)
 - [ ] Integrasi SIPOL
 - [ ] Sistem komentar
 - [ ] PWA

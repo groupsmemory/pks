@@ -51,7 +51,7 @@ export default function KtaForm() {
         const response = await submitKta(formData);
 
         if (response.success) {
-          setSuccessMsg(response.message);
+          setSuccessMsg(response.message || null);
         } else {
           setErrorMsg(response.error || 'Terjadi kesalahan saat memproses pendaftaran.');
         }
