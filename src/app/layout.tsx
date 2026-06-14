@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import { ThemeProvider } from '@/src/hooks/useTheme';
 import Analytics from './components/Analytics';
 import ServiceWorkerRegister from './components/ServiceWorkerRegister';
+import { Suspense } from 'react';
+
 
 const siteUrl = process.env.APP_URL || 'https://pkspamekasan.id';
 
@@ -76,5 +78,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
       </body>
     </html>
+    // di dalam return:
+    <Suspense fallback={null}>
+      <Analytics />
+    </Suspense>
   );
 }
