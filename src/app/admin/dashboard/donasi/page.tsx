@@ -1,6 +1,7 @@
 import { getDb } from '@/src/lib/db';
 import { formatRupiah } from '@/src/lib/utils';
 import EmptyState from '@/src/components/EmptyState';
+import FilterBar from '../FilterBar';
 
 interface DonasiRow {
   id: string;
@@ -15,20 +16,50 @@ interface DonasiRow {
   paid_at: string | null;
 }
 
-async function getDonasiList(): Promise<DonasiRow[]> {
+async function getDonasiList(filters: {
+  search?: string;
+  status?: string;
+  kecamatan?: string;
+}): Promise<DonasiRow[]> {
   if (!process.env.DATABASE_URL) return [];
 
   const sql = getDb();
 
-  const rows = await sql`
-    SELECT id, order_id, nama_donatur, kecamatan, jenis_donasi, jumlah_donasi,
-           midtrans_status, midtrans_payment_type, created_at, paid_at
-    FROM donasi
-    ORDER BY created_at DESC
-    LIMIT 100
-  `;
+  const conditions: string[] = [];
+  const params: (string | undefined)[] = [];
 
-  return rows as DonasiRow[];
+  if (filters.search) {
+    conditions.push(`nama_donatur ILIKE ${'$' + (params.length + 1)}`);
+    params.push(`%${filters.search}%`);
+  }
+  if (filters.status) {
+    conditions.push(`midtrans_status = ${'$' + (params.length + 1)}`);
+    params.push(filters.status);
+  }
+  if (filters.kecamatan) {
+    conditions.push(`kecamatan = ${'$' + (params.length + 1)}`);
+    params.push(filters.kecamatan);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const queryStr = `SELECT id, order_id, nama_donatur, kecamatan, jenis_donasi, jumlah_donasi,
+            midtrans_status, midtrans_payment_type, created_at, paid_at
+     FROM donasi ${where}
+     ORDER BY created_at DESC
+     LIMIT 100`;
+  const rows = await sql.query(queryStr, params);
+
+  return rows as unknown as DonasiRow[];
+}
+
+async function getKecamatanOptions(): Promise<{ value: string; label: string }[]> {
+  if (!process.env.DATABASE_URL) return [];
+  const sql = getDb();
+  const rows = await sql`
+    SELECT DISTINCT kecamatan FROM donasi WHERE kecamatan IS NOT NULL AND kecamatan != '' ORDER BY kecamatan
+  ` as { kecamatan: string }[];
+  return rows.map((r) => ({ value: r.kecamatan, label: r.kecamatan }));
 }
 
 const JENIS_LABEL: Record<string, string> = {
@@ -38,8 +69,15 @@ const JENIS_LABEL: Record<string, string> = {
   INFAK_PENDIDIKAN: 'Infak Pendidikan',
 };
 
-export default async function DonasiAdminPage() {
-  const data = await getDonasiList();
+export default async function DonasiAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string; kecamatan?: string }>;
+}) {
+  const { search, status, kecamatan } = await searchParams;
+  const filters = { search, status, kecamatan };
+  const data = await getDonasiList(filters);
+  const kecamatanOptions = await getKecamatanOptions();
 
   const totalSettlement = data
     .filter((r) => r.midtrans_status === 'SETTLEMENT' || r.midtrans_status === 'CAPTURE')
@@ -47,17 +85,45 @@ export default async function DonasiAdminPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-[1.5em] font-extrabold text-gray-900">Riwayat Donasi</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          {data.length} transaksi — Total terkumpul: <strong className="text-green-700">{formatRupiah(totalSettlement)}</strong>
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[1.5em] font-extrabold text-gray-900">Riwayat Donasi</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            {data.length} transaksi{search || status || kecamatan ? ' (filtered)' : ''} — Total terkumpul: <strong className="text-green-700">{formatRupiah(totalSettlement)}</strong>
+          </p>
+        </div>
+        <a
+          href="/api/admin/export/donasi"
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
+        >
+          ↓ CSV
+        </a>
+      </div>
+
+      <div className="mb-4">
+        <FilterBar
+          search={search || ''}
+          searchPlaceholder="Cari nama donatur..."
+          kecamatan={kecamatan || ''}
+          kecamatanOptions={kecamatanOptions}
+          status={status || ''}
+          statusOptions={[
+            { value: 'SETTLEMENT', label: 'Settlement' },
+            { value: 'CAPTURE', label: 'Capture' },
+            { value: 'PENDING', label: 'Pending' },
+            { value: 'DENY', label: 'Deny' },
+            { value: 'CANCEL', label: 'Cancel' },
+            { value: 'EXPIRE', label: 'Expire' },
+            { value: 'REFUND', label: 'Refund' },
+          ]}
+          statusLabel="Status Bayar"
+        />
       </div>
 
       {data.length === 0 ? (
         <EmptyState
           variant="admin"
-          message="Belum ada transaksi donasi."
+          message={search || status || kecamatan ? 'Tidak ada transaksi yang cocok dengan filter.' : 'Belum ada transaksi donasi.'}
         />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">

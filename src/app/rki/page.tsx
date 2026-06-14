@@ -6,6 +6,16 @@ export const metadata: Metadata = {
   title: 'Portal RKI — Rumah Keluarga Indonesia',
   description:
     'Portal edukasi ketahanan keluarga oleh BIPEKA DPD PKS Pamekasan. Modul parenting Islam, pembinaan ekonomi keluarga, dan jadwal konsultasi.',
+  openGraph: {
+    title: 'Portal RKI — Rumah Keluarga Indonesia',
+    description:
+      'Portal edukasi ketahanan keluarga oleh BIPEKA DPD PKS Pamekasan. Modul parenting Islam, pembinaan ekonomi keluarga, dan jadwal konsultasi.',
+  },
+  twitter: {
+    title: 'Portal RKI — Rumah Keluarga Indonesia',
+    description:
+      'Portal edukasi ketahanan keluarga oleh BIPEKA DPD PKS Pamekasan. Modul parenting Islam, pembinaan ekonomi keluarga, dan jadwal konsultasi.',
+  },
 };
 
 export default function RkiPage() {

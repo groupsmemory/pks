@@ -57,6 +57,14 @@ function formatDate(dateStr: string): string {
 export const metadata: Metadata = {
   title: 'Status Donasi — DPD PKS Pamekasan',
   description: 'Halaman status pembayaran donasi Anda.',
+  openGraph: {
+    title: 'Status Donasi — DPD PKS Pamekasan',
+    description: 'Halaman status pembayaran donasi Anda.',
+  },
+  twitter: {
+    title: 'Status Donasi — DPD PKS Pamekasan',
+    description: 'Halaman status pembayaran donasi Anda.',
+  },
 };
 
 export default async function DonasiSelesaiPage({

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface BeritaItem {
   id: string;
@@ -70,11 +71,15 @@ export default function HeroSection({ berita }: HeroSectionProps) {
                   className={`absolute inset-0 transition-opacity duration-700 ${i === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                 >
                   {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={item.image_url}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 60vw"
+                      />
+                    </div>
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-900 flex items-center justify-center">
                       <span className="text-6xl opacity-30" aria-hidden="true">📰</span>

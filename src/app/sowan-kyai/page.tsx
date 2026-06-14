@@ -6,6 +6,16 @@ export const metadata: Metadata = {
   title: 'Sowan Kyai — Silaturahmi Ulama DPD PKS Pamekasan',
   description:
     'Dokumentasi kunjungan silaturahmi (sowan) jajaran pengurus DPD PKS Pamekasan kepada para kiai kharismatik dan pengasuh pondok pesantren di Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Sowan Kyai — Silaturahmi Ulama DPD PKS Pamekasan',
+    description:
+      'Dokumentasi kunjungan silaturahmi (sowan) jajaran pengurus DPD PKS Pamekasan kepada para kiai kharismatik dan pengasuh pondok pesantren di Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Sowan Kyai — Silaturahmi Ulama DPD PKS Pamekasan',
+    description:
+      'Dokumentasi kunjungan silaturahmi (sowan) jajaran pengurus DPD PKS Pamekasan kepada para kiai kharismatik dan pengasuh pondok pesantren di Kabupaten Pamekasan.',
+  },
 };
 
 export default function SowanKyaiPage() {

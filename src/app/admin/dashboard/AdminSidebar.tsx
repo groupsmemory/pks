@@ -7,19 +7,21 @@ import { useAccessibility } from '@/src/hooks/useAccessibility';
 
 interface AdminSidebarProps {
   userName: string;
+  userRole: 'ADMIN' | 'SUPER_ADMIN';
 }
 
 const MENU_ITEMS = [
-  { href: '/admin/dashboard', label: 'Ringkasan', icon: '📊' },
-  { href: '/admin/dashboard/aspirasi', label: 'Log Aspirasi', icon: '📝' },
-  { href: '/admin/dashboard/kta', label: 'Pendaftar KTA', icon: '🪪' },
-  { href: '/admin/dashboard/donasi', label: 'Riwayat Donasi', icon: '💰' },
-  { href: '/admin/dashboard/berita', label: 'Kelola Berita', icon: '📰' },
-  { href: '/admin/dashboard/agenda', label: 'Kelola Agenda', icon: '🗓️' },
-  { href: '/admin/dashboard/galeri', label: 'Kelola Galeri', icon: '🖼️' },
+  { href: '/admin/dashboard', label: 'Ringkasan', icon: '📊', role: null as 'ADMIN' | 'SUPER_ADMIN' | null },
+  { href: '/admin/dashboard/aspirasi', label: 'Log Aspirasi', icon: '📝', role: null },
+  { href: '/admin/dashboard/kta', label: 'Pendaftar KTA', icon: '🪪', role: null },
+  { href: '/admin/dashboard/donasi', label: 'Riwayat Donasi', icon: '💰', role: null },
+  { href: '/admin/dashboard/berita', label: 'Kelola Berita', icon: '📰', role: null },
+  { href: '/admin/dashboard/agenda', label: 'Kelola Agenda', icon: '🗓️', role: null },
+  { href: '/admin/dashboard/galeri', label: 'Kelola Galeri', icon: '🖼️', role: null },
+  { href: '/admin/dashboard/admin-users', label: 'Kelola Admin', icon: '👤', role: 'SUPER_ADMIN' as const },
 ];
 
-export default function AdminSidebar({ userName }: AdminSidebarProps) {
+export default function AdminSidebar({ userName, userRole }: AdminSidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [showAccessibility, setShowAccessibility] = useState(false);
 
@@ -79,9 +81,18 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
           <p className={`text-xs uppercase tracking-wide ${isHighContrast ? 'text-[#FFFF00]' : 'text-gray-400'}`}>
             Masuk sebagai
           </p>
-          <p className={`font-bold mt-1 truncate ${isHighContrast ? 'text-[#FFFF00]' : 'text-white'}`}>
-            {userName}
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className={`font-bold truncate ${isHighContrast ? 'text-[#FFFF00]' : 'text-white'}`}>
+              {userName}
+            </p>
+            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${
+              userRole === 'SUPER_ADMIN'
+                ? 'bg-purple-600 text-white'
+                : 'bg-blue-500 text-white'
+            }`}>
+              {userRole === 'SUPER_ADMIN' ? 'Super' : 'Admin'}
+            </span>
+          </div>
         </div>
 
         {/* Accessibility Toggle */}
@@ -138,7 +149,9 @@ export default function AdminSidebar({ userName }: AdminSidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto" aria-label="Menu admin">
-          {MENU_ITEMS.map((item) => (
+          {MENU_ITEMS
+            .filter((item) => !item.role || item.role === userRole)
+            .map((item) => (
             <Link
               key={item.href}
               href={item.href}

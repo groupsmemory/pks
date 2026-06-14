@@ -3,6 +3,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Syarat & Ketentuan — DPD PKS Pamekasan',
   description: 'Syarat dan ketentuan penggunaan portal resmi DPD PKS Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Syarat & Ketentuan — DPD PKS Pamekasan',
+    description: 'Syarat dan ketentuan penggunaan portal resmi DPD PKS Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Syarat & Ketentuan — DPD PKS Pamekasan',
+    description: 'Syarat dan ketentuan penggunaan portal resmi DPD PKS Kabupaten Pamekasan.',
+  },
 };
 
 export default function SyaratKetentuanPage() {

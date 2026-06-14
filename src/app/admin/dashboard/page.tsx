@@ -7,22 +7,23 @@ async function getDashboardStats() {
 
   const sql = getDb();
 
-  const [aspirasiRows, ktaRows, donasiRows, beritaRows, agendaRows, galeriRows] = await Promise.all([
-    sql`SELECT COUNT(*) as total FROM aspirasi`,
-    sql`SELECT COUNT(*) as total FROM kta_registrations`,
-    sql`SELECT COUNT(*) as total FROM donasi WHERE midtrans_status = 'SETTLEMENT'`,
-    sql`SELECT COUNT(*) as total FROM berita`,
-    sql`SELECT COUNT(*) as total FROM agenda`,
-    sql`SELECT COUNT(*) as total FROM galeri`,
-  ]) as { total: number }[][];
+  const [rows] = await sql`
+    SELECT
+      (SELECT COUNT(*) FROM aspirasi) as aspirasi,
+      (SELECT COUNT(*) FROM kta_registrations) as kta,
+      (SELECT COUNT(*) FROM donasi WHERE midtrans_status = 'SETTLEMENT') as donasi,
+      (SELECT COUNT(*) FROM berita) as berita,
+      (SELECT COUNT(*) FROM agenda) as agenda,
+      (SELECT COUNT(*) FROM galeri) as galeri
+  ` as { aspirasi: number; kta: number; donasi: number; berita: number; agenda: number; galeri: number }[];
 
   return {
-    aspirasi: Number(aspirasiRows[0]?.total || 0),
-    kta: Number(ktaRows[0]?.total || 0),
-    donasi: Number(donasiRows[0]?.total || 0),
-    berita: Number(beritaRows[0]?.total || 0),
-    agenda: Number(agendaRows[0]?.total || 0),
-    galeri: Number(galeriRows[0]?.total || 0),
+    aspirasi: Number(rows?.aspirasi || 0),
+    kta: Number(rows?.kta || 0),
+    donasi: Number(rows?.donasi || 0),
+    berita: Number(rows?.berita || 0),
+    agenda: Number(rows?.agenda || 0),
+    galeri: Number(rows?.galeri || 0),
   };
 }
 

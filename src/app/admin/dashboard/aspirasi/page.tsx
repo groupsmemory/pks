@@ -1,5 +1,6 @@
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
+import FilterBar from '../FilterBar';
 
 interface AspirasiRow {
   id: string;
@@ -11,37 +12,98 @@ interface AspirasiRow {
   created_at: string;
 }
 
-async function getAspirasiList(): Promise<AspirasiRow[]> {
+async function getAspirasiList(filters: {
+  search?: string;
+  status?: string;
+  kecamatan?: string;
+}): Promise<AspirasiRow[]> {
   if (!process.env.DATABASE_URL) return [];
 
   const sql = getDb();
 
-  const rows = await sql`
-    SELECT id, nama_pelapor, kecamatan, isi_aspirasi, status_aspirasi, assigned_to, created_at
-    FROM aspirasi
-    ORDER BY created_at DESC
-    LIMIT 100
-  `;
+  const conditions: string[] = [];
+  const params: (string | undefined)[] = [];
 
-  return rows as AspirasiRow[];
+  if (filters.search) {
+    conditions.push(`nama_pelapor ILIKE ${'$' + (params.length + 1)}`);
+    params.push(`%${filters.search}%`);
+  }
+  if (filters.status) {
+    conditions.push(`status_aspirasi = ${'$' + (params.length + 1)}`);
+    params.push(filters.status);
+  }
+  if (filters.kecamatan) {
+    conditions.push(`kecamatan = ${'$' + (params.length + 1)}`);
+    params.push(filters.kecamatan);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const queryStr = `SELECT id, nama_pelapor, kecamatan, isi_aspirasi, status_aspirasi, assigned_to, created_at
+     FROM aspirasi ${where}
+     ORDER BY created_at DESC
+     LIMIT 100`;
+  const rows = await sql.query(queryStr, params);
+
+  return rows as unknown as AspirasiRow[];
 }
 
-export default async function AspirasiAdminPage() {
-  const data = await getAspirasiList();
+async function getKecamatanOptions(): Promise<{ value: string; label: string }[]> {
+  if (!process.env.DATABASE_URL) return [];
+  const sql = getDb();
+  const rows = await sql`
+    SELECT DISTINCT kecamatan FROM aspirasi WHERE kecamatan IS NOT NULL AND kecamatan != '' ORDER BY kecamatan
+  ` as { kecamatan: string }[];
+  return rows.map((r) => ({ value: r.kecamatan, label: r.kecamatan }));
+}
+
+export default async function AspirasiAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string; kecamatan?: string }>;
+}) {
+  const { search, status, kecamatan } = await searchParams;
+  const filters = { search, status, kecamatan };
+  const data = await getAspirasiList(filters);
+  const kecamatanOptions = await getKecamatanOptions();
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-[1.5em] font-extrabold text-gray-900">Log Aspirasi Masuk</h1>
-        <p className="text-sm text-gray-600 mt-1">
-          Menampilkan {data.length} aspirasi terbaru. NIK terenkripsi dan tidak ditampilkan.
-        </p>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-[1.5em] font-extrabold text-gray-900">Log Aspirasi Masuk</h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Menampilkan {data.length} aspirasi{search || status || kecamatan ? ' (filtered)' : ' terbaru'}. NIK terenkripsi dan tidak ditampilkan.
+          </p>
+        </div>
+        <a
+          href="/api/admin/export/aspirasi"
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
+        >
+          ↓ CSV
+        </a>
+      </div>
+
+      <div className="mb-4">
+        <FilterBar
+          search={search || ''}
+          searchPlaceholder="Cari nama pelapor..."
+          kecamatan={kecamatan || ''}
+          kecamatanOptions={kecamatanOptions}
+          status={status || ''}
+          statusOptions={[
+            { value: 'PENDING', label: 'Pending' },
+            { value: 'RESOLVED', label: 'Resolved' },
+            { value: 'REJECTED', label: 'Rejected' },
+          ]}
+          statusLabel="Status"
+        />
       </div>
 
       {data.length === 0 ? (
         <EmptyState
           variant="admin"
-          message="Belum ada aspirasi yang masuk."
+          message={search || status || kecamatan ? 'Tidak ada aspirasi yang cocok dengan filter.' : 'Belum ada aspirasi yang masuk.'}
         />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">

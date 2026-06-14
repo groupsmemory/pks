@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { parseFormData } from '@/src/validations/helpers';
 import { createBeritaSchema, updateBeritaSchema, deleteBeritaSchema } from '@/src/validations/cms/berita';
 import { slugify } from '@/src/lib/utils';
+import { getSession } from '@/src/lib/auth-helpers';
 
 export async function createBerita(formData: FormData) {
   try {
@@ -67,6 +68,11 @@ export async function updateBerita(formData: FormData) {
 
 export async function deleteBerita(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Hanya Super Admin yang dapat menghapus berita.' };
+    }
+
     const { id } = parseFormData(formData, deleteBeritaSchema);
 
     const sql = getDb();

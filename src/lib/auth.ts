@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
           id: String(user.id),
           name: user.nama,
           email: user.email,
-          role: user.role,
+          role: user.role as 'ADMIN' | 'SUPER_ADMIN',
         };
       },
     }),
@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role;
+        token.role = (user as { role: 'ADMIN' | 'SUPER_ADMIN' }).role;
       }
       return token;
     },

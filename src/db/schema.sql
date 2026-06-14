@@ -156,6 +156,7 @@ CREATE TABLE berita (
 
 CREATE INDEX idx_berita_slug ON berita USING btree (slug);
 CREATE INDEX idx_berita_published_at ON berita USING btree (published_at DESC);
+CREATE INDEX idx_berita_content_fts ON berita USING gin (to_tsvector('simple', content));
 
 -- =============================================================================
 -- CMS AGENDA / KEGIATAN

@@ -1,5 +1,6 @@
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
+import FilterBar from '../FilterBar';
 
 interface KtaRow {
   id: string;
@@ -10,23 +11,60 @@ interface KtaRow {
   created_at: string;
 }
 
-async function getKtaList(): Promise<KtaRow[]> {
+async function getKtaList(filters: {
+  search?: string;
+  status?: string;
+  kecamatan?: string;
+}): Promise<KtaRow[]> {
   if (!process.env.DATABASE_URL) return [];
 
   const sql = getDb();
 
-  const rows = await sql`
-    SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, status_verifikasi, created_at
-    FROM kta_registrations
-    ORDER BY created_at DESC
-    LIMIT 100
-  `;
+  const conditions: string[] = [];
+  const params: (string | undefined)[] = [];
 
-  return rows as KtaRow[];
+  if (filters.search) {
+    conditions.push(`nama_lengkap ILIKE ${'$' + (params.length + 1)}`);
+    params.push(`%${filters.search}%`);
+  }
+  if (filters.status) {
+    conditions.push(`status_verifikasi = ${'$' + (params.length + 1)}`);
+    params.push(filters.status);
+  }
+  if (filters.kecamatan) {
+    conditions.push(`kecamatan = ${'$' + (params.length + 1)}`);
+    params.push(filters.kecamatan);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const queryStr = `SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, status_verifikasi, created_at
+     FROM kta_registrations ${where}
+     ORDER BY created_at DESC
+     LIMIT 100`;
+  const rows = await sql.query(queryStr, params);
+
+  return rows as unknown as KtaRow[];
 }
 
-export default async function KtaAdminPage() {
-  const data = await getKtaList();
+async function getKecamatanOptions(): Promise<{ value: string; label: string }[]> {
+  if (!process.env.DATABASE_URL) return [];
+  const sql = getDb();
+  const rows = await sql`
+    SELECT DISTINCT kecamatan FROM kta_registrations WHERE kecamatan IS NOT NULL AND kecamatan != '' ORDER BY kecamatan
+  ` as { kecamatan: string }[];
+  return rows.map((r) => ({ value: r.kecamatan, label: r.kecamatan }));
+}
+
+export default async function KtaAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; status?: string; kecamatan?: string }>;
+}) {
+  const { search, status, kecamatan } = await searchParams;
+  const filters = { search, status, kecamatan };
+  const data = await getKtaList(filters);
+  const kecamatanOptions = await getKecamatanOptions();
 
   const pendingCount = data.filter((r) => r.status_verifikasi === 'PENDING').length;
 
@@ -36,15 +74,37 @@ export default async function KtaAdminPage() {
         <div>
           <h1 className="text-[1.5em] font-extrabold text-gray-900">Pendaftar KTA Online</h1>
           <p className="text-sm text-gray-600 mt-1">
-            {data.length} pendaftar total — <strong>{pendingCount} menunggu verifikasi</strong>
+            {data.length} pendaftar{search || status || kecamatan ? ' (filtered)' : ' total'} — <strong>{pendingCount} menunggu verifikasi</strong>
           </p>
         </div>
+        <a
+          href="/api/admin/export/kta"
+          className="inline-flex items-center gap-2 min-h-[44px] px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
+        >
+          ↓ CSV
+        </a>
+      </div>
+
+      <div className="mb-4">
+        <FilterBar
+          search={search || ''}
+          searchPlaceholder="Cari nama lengkap..."
+          kecamatan={kecamatan || ''}
+          kecamatanOptions={kecamatanOptions}
+          status={status || ''}
+          statusOptions={[
+            { value: 'PENDING', label: 'Pending' },
+            { value: 'APPROVED', label: 'Approved' },
+            { value: 'REJECTED', label: 'Rejected' },
+          ]}
+          statusLabel="Verifikasi"
+        />
       </div>
 
       {data.length === 0 ? (
         <EmptyState
           variant="admin"
-          message="Belum ada pendaftar KTA."
+          message={search || status || kecamatan ? 'Tidak ada pendaftar yang cocok dengan filter.' : 'Belum ada pendaftar KTA.'}
         />
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">

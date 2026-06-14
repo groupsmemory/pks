@@ -3,7 +3,10 @@ import './globals.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
+const siteUrl = process.env.APP_URL || 'https://pkspamekasan.id';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'DPD PKS Kabupaten Pamekasan — Portal Resmi',
     template: '%s — DPD PKS Pamekasan',
@@ -12,6 +15,20 @@ export const metadata: Metadata = {
     'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
   keywords: ['PKS', 'Pamekasan', 'aspirasi', 'KTA', 'dakwah', 'sowan kyai', 'DPD PKS', 'berita', 'agenda', 'galeri'],
   authors: [{ name: 'Dewan Pengurus Daerah PKS Kabupaten Pamekasan' }],
+  openGraph: {
+    type: 'website',
+    locale: 'id_ID',
+    siteName: 'DPD PKS Kabupaten Pamekasan',
+    title: 'DPD PKS Kabupaten Pamekasan — Portal Resmi',
+    description:
+      'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DPD PKS Kabupaten Pamekasan — Portal Resmi',
+    description:
+      'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+  },
 };
 
 // Script pencegah layout flash: membaca preferensi aksesibilitas dari localStorage

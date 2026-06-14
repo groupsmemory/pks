@@ -3,6 +3,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Kebijakan Privasi — DPD PKS Pamekasan',
   description: 'Kebijakan privasi portal resmi DPD PKS Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Kebijakan Privasi — DPD PKS Pamekasan',
+    description: 'Kebijakan privasi portal resmi DPD PKS Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Kebijakan Privasi — DPD PKS Pamekasan',
+    description: 'Kebijakan privasi portal resmi DPD PKS Kabupaten Pamekasan.',
+  },
 };
 
 export default function KebijakanPrivasiPage() {

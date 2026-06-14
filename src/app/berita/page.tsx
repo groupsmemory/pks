@@ -1,11 +1,20 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Berita — DPD PKS Pamekasan',
   description: 'Kumpulan berita, rilis pers, dan informasi terbaru dari DPD PKS Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Berita — DPD PKS Pamekasan',
+    description: 'Kumpulan berita, rilis pers, dan informasi terbaru dari DPD PKS Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Berita — DPD PKS Pamekasan',
+    description: 'Kumpulan berita, rilis pers, dan informasi terbaru dari DPD PKS Kabupaten Pamekasan.',
+  },
 };
 
 interface BeritaRow {
@@ -49,12 +58,13 @@ export default async function BeritaPage() {
                 className="group rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
               >
                 {item.image_url ? (
-                  <div className="aspect-video bg-gray-100 overflow-hidden">
-                    <img
+                  <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                    <Image
                       src={item.image_url}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      loading="lazy"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                   </div>
                 ) : (

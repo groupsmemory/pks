@@ -5,6 +5,16 @@ export const metadata: Metadata = {
   title: 'Profil Partai — DPD PKS Pamekasan',
   description:
     'Profil resmi DPD PKS Kabupaten Pamekasan. Sejarah partai, visi dan misi, struktur kepengurusan, serta profil Ketua Umum Mohammad Alim, S.Ag.',
+  openGraph: {
+    title: 'Profil Partai — DPD PKS Pamekasan',
+    description:
+      'Profil resmi DPD PKS Kabupaten Pamekasan. Sejarah partai, visi dan misi, struktur kepengurusan, serta profil Ketua Umum Mohammad Alim, S.Ag.',
+  },
+  twitter: {
+    title: 'Profil Partai — DPD PKS Pamekasan',
+    description:
+      'Profil resmi DPD PKS Kabupaten Pamekasan. Sejarah partai, visi dan misi, struktur kepengurusan, serta profil Ketua Umum Mohammad Alim, S.Ag.',
+  },
 };
 
 export default function ProfilPage() {

@@ -1,9 +1,39 @@
-import AspirasiForm from '@/src/app/components/AspirasiForm';
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import KtaForm from '@/src/app/components/KtaForm';
 import HeroSection from '@/src/app/components/HeroSection';
 import QuickStats from '@/src/app/components/QuickStats';
 import SidebarKunjungi from '@/src/app/components/SidebarKunjungi';
 import { getDb } from '@/src/lib/db';
+
+export const metadata: Metadata = {
+  title: 'Beranda — DPD PKS Pamekasan',
+  description:
+    'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+  openGraph: {
+    title: 'Beranda — DPD PKS Pamekasan',
+    description:
+      'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+  },
+  twitter: {
+    title: 'Beranda — DPD PKS Pamekasan',
+    description:
+      'Portal resmi Dewan Pengurus Daerah PKS Kabupaten Pamekasan. Berita, agenda, galeri, layanan aspirasi rakyat, registrasi KTA, profil partai, dan dokumentasi dakwah kultural.',
+  },
+};
+
+const AspirasiForm = dynamic(() => import('@/src/app/components/AspirasiForm'), {
+  loading: () => (
+    <div className="animate-pulse space-y-4">
+      <div className="h-8 bg-gray-200 rounded w-1/3" />
+      <div className="h-10 bg-gray-200 rounded" />
+      <div className="h-10 bg-gray-200 rounded" />
+      <div className="h-24 bg-gray-200 rounded" />
+      <div className="h-10 bg-gray-200 rounded w-1/4" />
+    </div>
+  ),
+});
 
 interface BeritaRow {
   id: string;
@@ -67,13 +97,15 @@ export default async function HomePage() {
                     i === 0 ? 'md:col-span-2 md:row-span-1' : ''
                   }`}
                 >
-                  <div className={`${i === 0 ? 'aspect-[16/9] md:aspect-[21/9]' : 'aspect-[16/9]'} bg-gray-100 overflow-hidden`}>
+                  <div className={`${i === 0 ? 'aspect-[16/9] md:aspect-[21/9]' : 'aspect-[16/9]'} relative bg-gray-100 overflow-hidden`}>
                     {item.image_url ? (
-                      <img
+                      <Image
                         src={item.image_url}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading={i === 0 ? 'eager' : 'lazy'}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 66vw"
+                        priority={i === 0}
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
@@ -166,12 +198,13 @@ export default async function HomePage() {
                   className="group rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all overflow-hidden focus:outline-none focus:ring-4 focus:ring-blue-300"
                 >
                   {item.image_url ? (
-                    <div className="aspect-video bg-gray-100 overflow-hidden">
-                      <img
+                    <div className="relative aspect-video bg-gray-100 overflow-hidden">
+                      <Image
                         src={item.image_url}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        loading="lazy"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
                     </div>
                   ) : (

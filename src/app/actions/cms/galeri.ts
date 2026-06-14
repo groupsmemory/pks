@@ -4,6 +4,7 @@ import { getDb } from '@/src/lib/db';
 import { revalidatePath } from 'next/cache';
 import { parseFormData } from '@/src/validations/helpers';
 import { createGaleriSchema, deleteGaleriSchema } from '@/src/validations/cms/galeri';
+import { getSession } from '@/src/lib/auth-helpers';
 
 export async function createGaleri(formData: FormData) {
   try {
@@ -32,6 +33,11 @@ export async function createGaleri(formData: FormData) {
 
 export async function deleteGaleri(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Hanya Super Admin yang dapat menghapus galeri.' };
+    }
+
     const { id } = parseFormData(formData, deleteGaleriSchema);
 
     const sql = getDb();

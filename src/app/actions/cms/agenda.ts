@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { parseFormData } from '@/src/validations/helpers';
 import { createAgendaSchema, updateAgendaSchema, deleteAgendaSchema } from '@/src/validations/cms/agenda';
 import { slugify } from '@/src/lib/utils';
+import { getSession } from '@/src/lib/auth-helpers';
 
 export async function createAgenda(formData: FormData) {
   try {
@@ -72,6 +73,11 @@ export async function updateAgenda(formData: FormData) {
 
 export async function deleteAgenda(formData: FormData) {
   try {
+    const session = await getSession();
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return { success: false, error: 'Hanya Super Admin yang dapat menghapus agenda.' };
+    }
+
     const { id } = parseFormData(formData, deleteAgendaSchema);
 
     const sql = getDb();

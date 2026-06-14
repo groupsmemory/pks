@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getDb } from '@/src/lib/db';
 
 interface AgendaDetail {
@@ -25,6 +26,18 @@ async function getAgenda(slug: string): Promise<AgendaDetail | null> {
   return (rows as AgendaDetail[])[0] || null;
 }
 
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  if (!process.env.DATABASE_URL) return [];
+
+  const sql = getDb();
+  const rows = await sql`
+    SELECT slug FROM agenda ORDER BY date DESC LIMIT 50
+  `;
+  return (rows as { slug: string }[]).map((row) => ({ slug: row.slug }));
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -34,9 +47,25 @@ export async function generateMetadata({
   const item = await getAgenda(slug);
   if (!item) return { title: 'Agenda tidak ditemukan' };
 
+  const ogImage = item.image_url
+    ? { url: item.image_url, width: 1200, height: 630, alt: item.title }
+    : undefined;
+
   return {
     title: `${item.title} — DPD PKS Pamekasan`,
     description: item.description || item.title,
+    openGraph: {
+      title: `${item.title} — DPD PKS Pamekasan`,
+      description: item.description || item.title,
+      type: 'article',
+      images: ogImage ? [ogImage] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${item.title} — DPD PKS Pamekasan`,
+      description: item.description || item.title,
+      images: ogImage ? [ogImage.url] : undefined,
+    },
   };
 }
 
@@ -63,8 +92,15 @@ export default async function AgendaDetailPage({
         </Link>
 
         {item.image_url && (
-          <div className="rounded-xl overflow-hidden mb-6 aspect-video bg-gray-100">
-            <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
+          <div className="relative rounded-xl overflow-hidden mb-6 aspect-video bg-gray-100">
+            <Image
+              src={item.image_url}
+              alt={item.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
+            />
           </div>
         )}
 

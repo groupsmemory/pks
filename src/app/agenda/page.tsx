@@ -6,6 +6,14 @@ import EmptyState from '@/src/components/EmptyState';
 export const metadata: Metadata = {
   title: 'Agenda — DPD PKS Pamekasan',
   description: 'Jadwal kegiatan dan agenda DPD PKS Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Agenda — DPD PKS Pamekasan',
+    description: 'Jadwal kegiatan dan agenda DPD PKS Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Agenda — DPD PKS Pamekasan',
+    description: 'Jadwal kegiatan dan agenda DPD PKS Kabupaten Pamekasan.',
+  },
 };
 
 interface AgendaRow {

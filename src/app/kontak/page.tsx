@@ -3,6 +3,14 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Kontak — DPD PKS Pamekasan',
   description: 'Hubungi DPD PKS Kabupaten Pamekasan. Alamat, WhatsApp, email, dan peta lokasi kantor.',
+  openGraph: {
+    title: 'Kontak — DPD PKS Pamekasan',
+    description: 'Hubungi DPD PKS Kabupaten Pamekasan. Alamat, WhatsApp, email, dan peta lokasi kantor.',
+  },
+  twitter: {
+    title: 'Kontak — DPD PKS Pamekasan',
+    description: 'Hubungi DPD PKS Kabupaten Pamekasan. Alamat, WhatsApp, email, dan peta lokasi kantor.',
+  },
 };
 
 export default function KontakPage() {

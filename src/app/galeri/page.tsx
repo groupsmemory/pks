@@ -1,10 +1,19 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Galeri — DPD PKS Pamekasan',
   description: 'Galeri foto dan dokumentasi kegiatan DPD PKS Kabupaten Pamekasan.',
+  openGraph: {
+    title: 'Galeri — DPD PKS Pamekasan',
+    description: 'Galeri foto dan dokumentasi kegiatan DPD PKS Kabupaten Pamekasan.',
+  },
+  twitter: {
+    title: 'Galeri — DPD PKS Pamekasan',
+    description: 'Galeri foto dan dokumentasi kegiatan DPD PKS Kabupaten Pamekasan.',
+  },
 };
 
 interface GaleriRow {
@@ -53,12 +62,13 @@ export default async function GaleriPage() {
                         key={item.id}
                         className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
                       >
-                        <div className="aspect-square bg-gray-100 overflow-hidden">
-                          <img
+                        <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                          <Image
                             src={item.image_url}
                             alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            loading="lazy"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           />
                         </div>
                         <div className="p-3">
