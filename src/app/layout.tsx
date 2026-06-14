@@ -70,7 +70,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body suppressHydrationWarning className="flex flex-col min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-300">
         <ThemeProvider>
-          <Analytics />
+          <<Suspense fallback={null}>
+            <Analytics />
+          </Suspense>>
           <ServiceWorkerRegister />
           <Header />
           <div className="flex-1">{children}</div>
@@ -78,9 +80,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
       </body>
     </html>
-    // di dalam return:
-    <Suspense fallback={null}>
-      <Analytics />
-    </Suspense>
   );
 }
