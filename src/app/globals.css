@@ -1,6 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
+  /* Smooth theme transition for dark mode */
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark body {
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+
   /* ==========================================================================
      Global High Contrast Mode Overrides (WCAG 2.1 AA Compliant)
      ========================================================================== */

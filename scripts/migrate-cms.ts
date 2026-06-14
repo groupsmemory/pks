@@ -56,6 +56,24 @@ async function migrate() {
     );
   `;
 
+  console.log('Membuat tabel tags...');
+  await sql`
+    CREATE TABLE IF NOT EXISTS tags (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      name VARCHAR(100) NOT NULL,
+      slug VARCHAR(100) UNIQUE NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS berita_tags (
+      berita_id UUID NOT NULL REFERENCES berita(id) ON DELETE CASCADE,
+      tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      PRIMARY KEY (berita_id, tag_id)
+    );
+  `;
+
   console.log('Membuat index...');
   await sql`CREATE INDEX IF NOT EXISTS idx_berita_slug ON berita (slug)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_berita_published_at ON berita (published_at DESC)`;
@@ -63,6 +81,8 @@ async function migrate() {
   await sql`CREATE INDEX IF NOT EXISTS idx_agenda_date ON agenda (date DESC)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_galeri_category ON galeri (category)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_galeri_created_at ON galeri (created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags (slug)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_berita_tags_tag_id ON berita_tags (tag_id)`;
 
   console.log('Migrasi selesai!');
 }

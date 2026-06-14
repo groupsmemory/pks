@@ -9,6 +9,7 @@ interface BeritaRow {
   slug: string;
   author: string;
   published_at: string;
+  tags: string[];
 }
 
 const PAGE_SIZE = 15;
@@ -21,33 +22,41 @@ async function getBeritaList(params: {
 
   const sql = getDb();
 
+  const baseSelect = `b.id, b.title, b.slug, b.author, b.published_at,
+    COALESCE(
+      (SELECT array_agg(t.name ORDER BY t.name) FROM berita_tags bt
+       JOIN tags t ON t.id = bt.tag_id
+       WHERE bt.berita_id = b.id),
+      '{}'
+    ) AS tags`;
+
   let rows: BeritaRow[];
   if (params.cursor && params.dir === 'prev') {
     const [cursorDate, cursorId] = decodeCursor(params.cursor);
-    const sub = await sql`
-      SELECT id, title, slug, author, published_at
-      FROM berita
-      WHERE (published_at, id) > (${cursorDate}::timestamptz, ${cursorId}::uuid)
-      ORDER BY published_at ASC, id ASC
-      LIMIT ${PAGE_SIZE + 1}
-    ` as BeritaRow[];
+    const sub = await sql.query(`
+      SELECT ${baseSelect}
+      FROM berita b
+      WHERE (b.published_at, b.id) > ($1::timestamptz, $2::uuid)
+      ORDER BY b.published_at ASC, b.id ASC
+      LIMIT $3
+    `, [cursorDate, cursorId, PAGE_SIZE + 1]);
     rows = (sub as BeritaRow[]).reverse();
   } else if (params.cursor) {
     const [cursorDate, cursorId] = decodeCursor(params.cursor);
-    rows = await sql`
-      SELECT id, title, slug, author, published_at
-      FROM berita
-      WHERE (published_at, id) < (${cursorDate}::timestamptz, ${cursorId}::uuid)
-      ORDER BY published_at DESC, id DESC
-      LIMIT ${PAGE_SIZE + 1}
-    ` as BeritaRow[];
+    rows = await sql.query(`
+      SELECT ${baseSelect}
+      FROM berita b
+      WHERE (b.published_at, b.id) < ($1::timestamptz, $2::uuid)
+      ORDER BY b.published_at DESC, b.id DESC
+      LIMIT $3
+    `, [cursorDate, cursorId, PAGE_SIZE + 1]) as BeritaRow[];
   } else {
-    rows = await sql`
-      SELECT id, title, slug, author, published_at
-      FROM berita
-      ORDER BY published_at DESC, id DESC
-      LIMIT ${PAGE_SIZE + 1}
-    ` as BeritaRow[];
+    rows = await sql.query(`
+      SELECT ${baseSelect}
+      FROM berita b
+      ORDER BY b.published_at DESC, b.id DESC
+      LIMIT $1
+    `, [PAGE_SIZE + 1]) as BeritaRow[];
   }
 
   const hasMore = rows.length > PAGE_SIZE;
@@ -95,6 +104,7 @@ export default async function AdminBeritaPage({
                 <tr>
                   <th scope="col" className="px-4 py-3 font-bold text-gray-700">Judul</th>
                   <th scope="col" className="px-4 py-3 font-bold text-gray-700">Penulis</th>
+                  <th scope="col" className="px-4 py-3 font-bold text-gray-700">Tags</th>
                   <th scope="col" className="px-4 py-3 font-bold text-gray-700">Tanggal</th>
                   <th scope="col" className="px-4 py-3 font-bold text-gray-700">Aksi</th>
                 </tr>
@@ -104,6 +114,17 @@ export default async function AdminBeritaPage({
                   <tr key={row.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">{row.title}</td>
                     <td className="px-4 py-3 text-gray-600">{row.author}</td>
+                    <td className="px-4 py-3">
+                      {row.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {row.tags.map((tag) => (
+                            <span key={tag} className="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">
                       {new Date(row.published_at).toLocaleDateString('id-ID', {
                         day: 'numeric', month: 'short', year: 'numeric',

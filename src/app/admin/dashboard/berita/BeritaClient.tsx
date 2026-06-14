@@ -74,6 +74,12 @@ export function BeritaForm() {
           </div>
         </div>
         <div>
+          <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">Tags (pisahkan dengan koma)</label>
+          <input type="text" id="tags" disabled={pending} placeholder="contoh: politik, daerah, pemilu" {...register('tags')}
+            className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          {errors.tags && <p className="text-red-600 text-xs mt-1">{errors.tags.message}</p>}
+        </div>
+        <div>
           <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
           <textarea id="excerpt" rows={2} disabled={pending} {...register('excerpt')}
             className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />

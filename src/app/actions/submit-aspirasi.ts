@@ -7,6 +7,7 @@ import { Redis } from '@upstash/redis';
 import { getDb } from '@/src/lib/db';
 import { parseFormData } from '@/src/validations/helpers';
 import { aspirasiSchema } from '@/src/validations/aspirasi';
+import { createNotification } from '@/src/lib/notifications';
 
 const DEFAULT_ROUTING = { assigned_to: 'Humas DPD PKS Pamekasan (Default)', staff_phone: '6284444444444' };
 
@@ -59,7 +60,7 @@ export async function submitAspirasi(formData: FormData) {
 
     const routingDetails = (routing as { assigned_to: string; staff_phone: string }[])[0] || DEFAULT_ROUTING;
 
-    await sql`
+    const [inserted] = await sql`
       INSERT INTO aspirasi (
         nama_pelapor,
         nik_encrypted,
@@ -83,7 +84,18 @@ export async function submitAspirasi(formData: FormData) {
         ${routingDetails.assigned_to},
         ${ipAddress}
       )
-    `;
+      RETURNING id
+    ` as { id: string }[];
+
+    const aspirasiId = inserted?.id;
+    if (aspirasiId) {
+      await createNotification({
+        type: 'aspirasi_baru',
+        title: 'Aspirasi Baru Masuk',
+        message: `${nama_pelapor} dari Kec. ${kecamatan} mengirimkan aspirasi baru.`,
+        referenceId: aspirasiId,
+      });
+    }
 
     return {
       success: true,

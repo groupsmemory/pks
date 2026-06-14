@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { useAccessibility } from '@/src/hooks/useAccessibility';
+import NotificationBell from './NotificationBell';
+import DarkModeToggle from '@/src/app/components/DarkModeToggle';
 
 interface AdminSidebarProps {
   userName: string;
@@ -78,20 +80,25 @@ export default function AdminSidebar({ userName, userRole }: AdminSidebarProps) 
       >
         {/* User Info */}
         <div className={`p-6 border-b ${borderCls}`}>
-          <p className={`text-xs uppercase tracking-wide ${isHighContrast ? 'text-[#FFFF00]' : 'text-gray-400'}`}>
-            Masuk sebagai
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <p className={`font-bold truncate ${isHighContrast ? 'text-[#FFFF00]' : 'text-white'}`}>
-              {userName}
-            </p>
-            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${
-              userRole === 'SUPER_ADMIN'
-                ? 'bg-purple-600 text-white'
-                : 'bg-blue-500 text-white'
-            }`}>
-              {userRole === 'SUPER_ADMIN' ? 'Super' : 'Admin'}
-            </span>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className={`text-xs uppercase tracking-wide ${isHighContrast ? 'text-[#FFFF00]' : 'text-gray-400'}`}>
+                Masuk sebagai
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className={`font-bold truncate ${isHighContrast ? 'text-[#FFFF00]' : 'text-white'}`}>
+                  {userName}
+                </p>
+                <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase rounded-full shrink-0 ${
+                  userRole === 'SUPER_ADMIN'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-blue-500 text-white'
+                }`}>
+                  {userRole === 'SUPER_ADMIN' ? 'Super' : 'Admin'}
+                </span>
+              </div>
+            </div>
+            <NotificationBell isHighContrast={isHighContrast} />
           </div>
         </div>
 
@@ -123,6 +130,10 @@ export default function AdminSidebar({ userName, userRole }: AdminSidebarProps) 
               >
                 {isHighContrast ? '◉ Kontras Tinggi' : '○ Kontras Tinggi'}
               </button>
+              <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
+                <span className="text-xs text-gray-400">Mode Gelap</span>
+                <DarkModeToggle />
+              </div>
               <div className="flex gap-2">
                 <button
                   type="button"

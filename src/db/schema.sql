@@ -159,6 +159,27 @@ CREATE INDEX idx_berita_published_at ON berita USING btree (published_at DESC);
 CREATE INDEX idx_berita_content_fts ON berita USING gin (to_tsvector('simple', content));
 
 -- =============================================================================
+-- TAGS / HASHTAG SYSTEM
+-- =============================================================================
+
+CREATE TABLE tags (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_tags_slug ON tags USING btree (slug);
+
+CREATE TABLE berita_tags (
+    berita_id UUID NOT NULL REFERENCES berita(id) ON DELETE CASCADE,
+    tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (berita_id, tag_id)
+);
+
+CREATE INDEX idx_berita_tags_tag_id ON berita_tags USING btree (tag_id);
+
+-- =============================================================================
 -- CMS AGENDA / KEGIATAN
 -- =============================================================================
 
@@ -194,6 +215,23 @@ CREATE TABLE galeri (
 
 CREATE INDEX idx_galeri_category ON galeri USING btree (category);
 CREATE INDEX idx_galeri_created_at ON galeri USING btree (created_at DESC);
+
+-- =============================================================================
+-- NOTIFICATIONS: Real-time admin notifications for new aspirasi/KTA
+-- =============================================================================
+
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type VARCHAR(50) NOT NULL CHECK (type IN ('aspirasi_baru', 'kta_baru')),
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    reference_id UUID,
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_notifications_is_read ON notifications USING btree (is_read);
+CREATE INDEX idx_notifications_created_at ON notifications USING btree (created_at DESC);
 
 -- =============================================================================
 -- DAPIL ROUTING: Pemetaan kecamatan ke staf DPRD

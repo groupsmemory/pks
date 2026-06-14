@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/src/lib/auth';
 import { getDb } from '@/src/lib/db';
+import MonthlyChart from './MonthlyChart';
 
 async function getDashboardStats() {
   if (!process.env.DATABASE_URL) return { aspirasi: 0, kta: 0, donasi: 0, berita: 0, agenda: 0, galeri: 0 };
@@ -27,9 +28,49 @@ async function getDashboardStats() {
   };
 }
 
+async function getMonthlyStats() {
+  if (!process.env.DATABASE_URL) return [];
+
+  const sql = getDb();
+
+  const rows = await sql`
+    SELECT
+      to_char(month_series.month, 'Mon YYYY') as label,
+      COALESCE(aspirasi.cnt, 0) as aspirasi,
+      COALESCE(kta.cnt, 0) as kta
+    FROM (
+      SELECT date_trunc('month', generate_series(
+        date_trunc('month', NOW() - INTERVAL '11 months'),
+        date_trunc('month', NOW()),
+        '1 month'::interval
+      )) as month
+    ) month_series
+    LEFT JOIN (
+      SELECT date_trunc('month', created_at) as month, COUNT(*) as cnt
+      FROM aspirasi
+      WHERE created_at >= date_trunc('month', NOW() - INTERVAL '11 months')
+      GROUP BY date_trunc('month', created_at)
+    ) aspirasi ON month_series.month = aspirasi.month
+    LEFT JOIN (
+      SELECT date_trunc('month', created_at) as month, COUNT(*) as cnt
+      FROM kta_registrations
+      WHERE created_at >= date_trunc('month', NOW() - INTERVAL '11 months')
+      GROUP BY date_trunc('month', created_at)
+    ) kta ON month_series.month = kta.month
+    ORDER BY month_series.month ASC
+  ` as { label: string; aspirasi: number; kta: number }[];
+
+  return rows.map((r) => ({
+    label: r.label,
+    aspirasi: Number(r.aspirasi),
+    kta: Number(r.kta),
+  }));
+}
+
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
   const stats = await getDashboardStats();
+  const monthlyData = await getMonthlyStats();
 
   return (
     <div>
@@ -82,6 +123,11 @@ export default async function AdminDashboardPage() {
           <p className="text-[2em] font-extrabold text-amber-600 mt-2">{stats.galeri}</p>
           <p className="text-xs text-gray-400 mt-1">Foto terdokumentasi</p>
         </div>
+      </div>
+
+      {/* Monthly Chart */}
+      <div className="mb-8">
+        <MonthlyChart data={monthlyData} />
       </div>
 
       {/* Quick Links */}

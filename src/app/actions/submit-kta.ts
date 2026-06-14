@@ -5,6 +5,7 @@ import { getDb } from '@/src/lib/db';
 import { encryptData } from '@/src/lib/crypto';
 import { parseFormData } from '@/src/validations/helpers';
 import { ktaSchema } from '@/src/validations/kta';
+import { createNotification } from '@/src/lib/notifications';
 
 export async function submitKta(formData: FormData) {
   const headersList = await headers();
@@ -25,7 +26,7 @@ export async function submitKta(formData: FormData) {
 
     const sql = getDb();
 
-    await sql`
+    const [inserted] = await sql`
       INSERT INTO kta_registrations (
         nama_lengkap,
         encrypted_nik,
@@ -43,7 +44,18 @@ export async function submitKta(formData: FormData) {
         ${kecamatan},
         'PENDING'
       )
-    `;
+      RETURNING id
+    ` as { id: string }[];
+
+    const ktaId = inserted?.id;
+    if (ktaId) {
+      await createNotification({
+        type: 'kta_baru',
+        title: 'Pendaftar KTA Baru',
+        message: `${nama_lengkap} dari Kec. ${kecamatan} mendaftar KTA baru.`,
+        referenceId: ktaId,
+      });
+    }
 
     return {
       success: true,

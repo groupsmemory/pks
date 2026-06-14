@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { ThemeProvider } from '@/src/hooks/useTheme';
+import Analytics from './components/Analytics';
+import ServiceWorkerRegister from './components/ServiceWorkerRegister';
 
 const siteUrl = process.env.APP_URL || 'https://pkspamekasan.id';
 
@@ -39,7 +42,9 @@ const antiFlashScript = `
     var d = document.documentElement;
     var hc = localStorage.getItem('accessibility_high_contrast');
     var fs = localStorage.getItem('accessibility_font_size');
+    var dm = localStorage.getItem('theme_dark');
     if (hc === 'true') d.classList.add('high-contrast');
+    if (dm === 'true') d.classList.add('dark');
     if (fs && ['scale-100','scale-125','scale-150','scale-200'].indexOf(fs) !== -1) {
       d.classList.add(fs);
     }
@@ -52,11 +57,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id" dir="ltr" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: antiFlashScript }} />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/icon-512.svg" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="PKS Pamekasan" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="PKS Pamekasan" />
+        <meta name="theme-color" content="#1e40af" />
       </head>
-      <body suppressHydrationWarning className="flex flex-col min-h-screen">
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
+      <body suppressHydrationWarning className="flex flex-col min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-300">
+        <ThemeProvider>
+          <Analytics />
+          <ServiceWorkerRegister />
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ export const createBeritaSchema = z.object({
   excerpt: z.string().optional().or(z.literal('')),
   image_url: z.string().url('URL gambar tidak valid').optional().or(z.literal('')),
   author: z.string().optional().or(z.literal('')),
+  tags: z.string().optional().or(z.literal('')),
 });
 
 export const updateBeritaSchema = createBeritaSchema.extend({

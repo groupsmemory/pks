@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import DarkModeToggle from './DarkModeToggle';
 
 type MegaGroup = {
   category: string;
@@ -103,23 +104,23 @@ export default function Header() {
 
   const headerBg = isHighContrast
     ? 'bg-[#000000] border-b-2 border-[#FFFF00]'
-    : 'bg-white border-b border-gray-200 shadow-sm';
+    : 'bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 shadow-sm';
 
   const linkClass = isHighContrast
     ? 'text-[#FFFF00] hover:underline focus:ring-[#FFFF00]'
-    : 'text-gray-700 hover:text-blue-600 focus:ring-blue-300';
+    : 'text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 focus:ring-blue-300';
 
   const mobileMenuBg = isHighContrast
     ? 'bg-[#000000] border-t-2 border-[#FFFF00]'
-    : 'bg-white border-t border-gray-200';
+    : 'bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700';
 
   const hamburgerClass = isHighContrast
     ? 'text-[#FFFF00] border-2 border-[#FFFF00] hover:bg-[#FFFF00] hover:text-[#000000]'
-    : 'text-gray-700 border border-gray-300 hover:bg-gray-100';
+    : 'text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-600 hover:bg-gray-100 dark:hover:bg-slate-800';
 
   const dropdownBg = isHighContrast
     ? 'bg-[#000000] border-2 border-[#FFFF00]'
-    : 'bg-white border border-gray-200 shadow-xl';
+    : 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl';
 
   const handleMouseEnter = (label: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -183,7 +184,7 @@ export default function Header() {
                     type="button"
                     onClick={() => setOpenMega(openMega === item.label ? null : item.label)}
                     className={`min-h-[44px] min-w-[44px] px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-4 flex items-center gap-1 ${linkClass} ${
-                      openMega === item.label ? (isHighContrast ? 'bg-[#FFFF00] text-[#000000]' : 'bg-blue-50 text-blue-700') : ''
+                      openMega === item.label ? (isHighContrast ? 'bg-[#FFFF00] text-[#000000]' : 'bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-400') : ''
                     }`}
                     aria-expanded={openMega === item.label}
                     aria-haspopup="true"
@@ -210,7 +211,7 @@ export default function Header() {
                         {item.megaMenu.map((group) => (
                           <div key={group.category} className="min-w-[160px]">
                             <p className={`text-xs font-bold uppercase tracking-wider mb-3 ${
-                              isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500'
+                              isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500 dark:text-slate-400'
                             }`}>
                               {group.category}
                             </p>
@@ -245,17 +246,24 @@ export default function Header() {
             )}
           </nav>
 
+          <div className="hidden md:flex items-center">
+            <DarkModeToggle />
+          </div>
+
           {/* Mobile Hamburger */}
-          <button
-            type="button"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className={`md:hidden min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg font-bold transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 ${hamburgerClass}`}
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="mobile-menu"
-            aria-label={isMobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
-          >
-            {isMobileMenuOpen ? '✕' : '☰'}
-          </button>
+          <div className="flex md:hidden items-center gap-1">
+            <DarkModeToggle />
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className={`min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg font-bold transition-colors focus:outline-none focus:ring-4 focus:ring-blue-300 ${hamburgerClass}`}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={isMobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+            >
+              {isMobileMenuOpen ? '✕' : '☰'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -292,7 +300,7 @@ export default function Header() {
                       {item.megaMenu.map((group) => (
                         <div key={group.category} className="mb-3">
                           <p className={`px-4 py-1 text-xs font-bold uppercase tracking-wider ${
-                            isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500'
+                            isHighContrast ? 'text-[#FFFF00]' : 'text-gray-500 dark:text-slate-400'
                           }`}>
                             {group.category}
                           </p>
