@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 
 interface BeritaItem {
   id: string;
@@ -72,7 +72,7 @@ export default function HeroSection({ berita }: HeroSectionProps) {
                 >
                   {item.image_url ? (
                     <div className="relative w-full h-full">
-                      <Image
+                      <SafeImage
                         src={item.image_url}
                         alt={item.title}
                         fill

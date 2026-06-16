@@ -20,6 +20,7 @@ import {
 } from '@/src/lib/constants';
 import { DESA_PER_KECAMATAN } from '@/src/data/wilayah-pamekasan';
 import { useAccessibility } from '@/src/hooks/useAccessibility';
+import { useUploadThing } from '@/src/lib/uploadthing-client';
 
 const FONT_SCALES = ['scale-100', 'scale-125', 'scale-150', 'scale-200'] as const;
 
@@ -34,6 +35,8 @@ export default function DaftarForm() {
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
   const { isHighContrast } = useAccessibility();
+
+  const { startUpload, isUploading } = useUploadThing("ktaImage");
 
   const {
     register,
@@ -87,14 +90,32 @@ export default function DaftarForm() {
     setIsPending(true);
 
     try {
+      const files: File[] = [];
+      if (ktpFile) files.push(ktpFile);
+      if (profileFile) files.push(profileFile);
+
+      let ktpImageUrl = '';
+      let profileImageUrl = '';
+
+      if (files.length > 0) {
+        const uploadResult = await startUpload(files);
+        if (uploadResult) {
+          if (uploadResult[0]) {
+            if (ktpFile) ktpImageUrl = uploadResult[0].url;
+            else profileImageUrl = uploadResult[0].url;
+          }
+          if (uploadResult[1]) profileImageUrl = uploadResult[1].url;
+        }
+      }
+
       const formData = new FormData();
       Object.entries(data).forEach(([key, val]) => {
         if (val !== undefined && val !== null) {
           formData.set(key, String(val));
         }
       });
-      if (ktpFile) formData.set('ktp_image', ktpFile);
-      if (profileFile) formData.set('profile_image', profileFile);
+      formData.set('ktp_image_url', ktpImageUrl);
+      formData.set('profile_image_url', profileImageUrl);
 
       const response = await submitKta(formData);
 
@@ -729,8 +750,10 @@ export default function DaftarForm() {
                     : 'bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-400'
                 }`}
               >
-                {isPending ? (
-                  <>Mengenkripsi & Mengirim...</>
+                {isUploading ? (
+                  <>Mengunggah gambar...</>
+                ) : isPending ? (
+                  <>Mengirim data...</>
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>

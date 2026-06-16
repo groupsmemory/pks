@@ -9,12 +9,14 @@
     "lint": "eslint .",
     "clean": "next clean",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "migrate:kta-images": "npx tsx scripts/migrate-kta-images.ts"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^4.0.0",
     "@neondatabase/serverless": "^1.1.0",
+    "@uploadthing/react": "^7.3.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "autoprefixer": "^10.4.21",
@@ -32,6 +34,7 @@
     "react-hook-form": "^7.79.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.3.1",
+    "uploadthing": "^7.7.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {

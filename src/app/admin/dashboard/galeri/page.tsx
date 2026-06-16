@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 import { getDb } from '@/src/lib/db';
 import { GaleriForm, GaleriDeleteForm } from './GaleriClient';
 import EmptyState from '@/src/components/EmptyState';
@@ -94,7 +94,7 @@ export default async function AdminGaleriPage({
             {data.map((row) => (
               <div key={row.id} className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
               <div className="relative aspect-square bg-gray-100">
-                <Image src={row.image_url} alt={row.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />
+                <SafeImage src={row.image_url} alt={row.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />
               </div>
                 <div className="p-3">
                   <p className="font-medium text-sm truncate">{row.title}</p>

@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { UploadButton } from '@uploadthing/react';
 import { createGaleriSchema, type CreateGaleriInput } from '@/src/validations/cms/galeri';
 import { createGaleri, deleteGaleri } from '@/src/app/actions/cms/galeri';
+import type { OurFileRouter } from '@/src/lib/uploadthing';
 import ConfirmModal from '@/src/components/ConfirmModal';
 import LoadingOverlay from '@/src/components/LoadingOverlay';
 
@@ -16,6 +18,7 @@ export function GaleriForm() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CreateGaleriInput>({
     resolver: zodResolver(createGaleriSchema),
@@ -61,9 +64,26 @@ export function GaleriForm() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">URL Gambar *</label>
-            <input type="url" id="image_url" disabled={pending} {...register('image_url')}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Gambar *</label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input type="url" id="image_url" disabled={pending} placeholder="URL gambar (atau upload di samping)" {...register('image_url')}
+                className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <div className="shrink-0">
+                <UploadButton<OurFileRouter, "cmsImage">
+                  endpoint="cmsImage"
+                  onClientUploadComplete={(res) => {
+                    if (res?.[0]) setValue("image_url", res[0].url);
+                  }}
+                  onUploadError={(error: Error) => {
+                    console.error("Upload error", error);
+                  }}
+                  appearance={{
+                    button: "bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors",
+                    allowedContent: "hidden",
+                  }}
+                />
+              </div>
+            </div>
             {errors.image_url && <p className="text-red-600 text-xs mt-1">{errors.image_url.message}</p>}
           </div>
           <div>

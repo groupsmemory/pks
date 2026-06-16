@@ -8,7 +8,6 @@ interface KtaRow {
   nama_lengkap: string;
   nomor_whatsapp: string;
   kecamatan: string;
-  kelurahan_desa: string | null;
   email: string | null;
   tempat_lahir: string | null;
   jenis_kelamin: string | null;
@@ -44,7 +43,7 @@ async function getKtaList(filters: {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  const queryStr = `SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, kelurahan_desa, email, tempat_lahir, jenis_kelamin, pekerjaan, status_verifikasi, created_at
+  const queryStr = `SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, email, tempat_lahir, jenis_kelamin, pekerjaan, status_verifikasi, created_at
      FROM kta_registrations ${where}
      ORDER BY created_at DESC
      LIMIT 100`;

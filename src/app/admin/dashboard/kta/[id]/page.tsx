@@ -228,11 +228,19 @@ export default async function KtaDetailPage({
             </div>
             <div className="p-4">
               {data.ktp_image_base64 ? (
-                <img
-                  src={`data:${data.ktp_image_type || 'image/jpeg'};base64,${data.ktp_image_base64}`}
-                  alt="KTP"
-                  className="w-full rounded-lg border border-gray-200"
-                />
+                data.ktp_image_base64.startsWith('http') ? (
+                  <img
+                    src={data.ktp_image_base64}
+                    alt="KTP"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                ) : (
+                  <img
+                    src={`data:${data.ktp_image_type || 'image/jpeg'};base64,${data.ktp_image_base64}`}
+                    alt="KTP"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                )
               ) : (
                 <p className="text-sm text-gray-400 italic text-center py-8">Tidak ada file KTP</p>
               )}
@@ -246,11 +254,19 @@ export default async function KtaDetailPage({
             </div>
             <div className="p-4">
               {data.profile_image_base64 ? (
-                <img
-                  src={`data:${data.profile_image_type || 'image/jpeg'};base64,${data.profile_image_base64}`}
-                  alt="Foto Diri"
-                  className="w-full rounded-lg border border-gray-200"
-                />
+                data.profile_image_base64.startsWith('http') ? (
+                  <img
+                    src={data.profile_image_base64}
+                    alt="Foto Diri"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                ) : (
+                  <img
+                    src={`data:${data.profile_image_type || 'image/jpeg'};base64,${data.profile_image_base64}`}
+                    alt="Foto Diri"
+                    className="w-full rounded-lg border border-gray-200"
+                  />
+                )
               ) : (
                 <p className="text-sm text-gray-400 italic text-center py-8">Tidak ada foto diri</p>
               )}

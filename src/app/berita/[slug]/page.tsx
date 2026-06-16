@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 import { getDb } from '@/src/lib/db';
 import ShareButtons from '@/src/app/components/ShareButtons';
 
@@ -131,7 +131,7 @@ export default async function BeritaDetailPage({
 
         {item.image_url && (
           <div className="relative rounded-xl overflow-hidden mb-6 aspect-video bg-gray-100">
-            <Image
+            <SafeImage
               src={item.image_url}
               alt={item.title}
               fill
@@ -189,7 +189,7 @@ export default async function BeritaDetailPage({
                 >
                   {r.image_url ? (
                     <div className="relative aspect-video bg-gray-100 overflow-hidden">
-                      <Image
+                      <SafeImage
                         src={r.image_url}
                         alt={r.title}
                         fill

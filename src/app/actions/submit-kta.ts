@@ -4,7 +4,6 @@ import { getDb } from '@/src/lib/db';
 import { encryptData } from '@/src/lib/crypto';
 import { ktaSchema } from '@/src/validations/kta';
 import { createNotification } from '@/src/lib/notifications';
-import { fileToBase64 } from '@/src/lib/upload';
 
 export async function submitKta(formData: FormData) {
   try {
@@ -46,21 +45,8 @@ export async function submitKta(formData: FormData) {
 
     const { ciphertext: encrypted_nik2, iv: iv_nik2, tag: tag_nik2 } = encryptData(data.nik);
 
-    let ktpBase64 = '';
-    let ktpType = '';
-    const ktpFile = formData.get('ktp_image') as File | null;
-    if (ktpFile && ktpFile.size > 0) {
-      ktpBase64 = await fileToBase64(ktpFile);
-      ktpType = ktpFile.type;
-    }
-
-    let profileBase64 = '';
-    let profileType = '';
-    const profileFile = formData.get('profile_image') as File | null;
-    if (profileFile && profileFile.size > 0) {
-      profileBase64 = await fileToBase64(profileFile);
-      profileType = profileFile.type;
-    }
+    const ktpImageUrl = formData.get('ktp_image_url')?.toString().trim() || '';
+    const profileImageUrl = formData.get('profile_image_url')?.toString().trim() || '';
 
     const tanggalLahirFormatted = data.tanggal_lahir.split('/').reverse().join('-');
 
@@ -91,8 +77,8 @@ export async function submitKta(formData: FormData) {
         ${data.agama}, ${data.status_perkawinan},
         ${data.pekerjaan}, ${data.pendidikan_terakhir},
         ${data.email || null}, ${data.nomor_whatsapp},
-        ${ktpBase64 || null}, ${ktpType || null},
-        ${profileBase64 || null}, ${profileType || null},
+        ${ktpImageUrl || null}, ${ktpImageUrl ? 'url' : null},
+        ${profileImageUrl || null}, ${profileImageUrl ? 'url' : null},
         ${data.not_committee}, ${data.agree},
         'PENDING'
       )

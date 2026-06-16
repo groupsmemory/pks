@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import DarkModeToggle from './DarkModeToggle';
 
 type MegaGroup = {
@@ -123,6 +124,8 @@ export default function Header() {
     ? 'bg-[#000000] border-2 border-[#FFFF00]'
     : 'bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-xl';
 
+
+
   const handleMouseEnter = (label: string) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setOpenMega(label);
@@ -159,8 +162,7 @@ export default function Header() {
             className={`flex items-center gap-3 font-extrabold text-[1.125em] focus:outline-none focus:ring-4 rounded px-2 py-1 ${linkClass}`}
             aria-label="Beranda Dewan Pengurus Daerah PKS Kabupaten Pamekasan"
           >
-            {/* Ganti dengan <Image src="/logo.png" alt="Logo PKS" width={40} height={40} /> */}
-            <span aria-hidden="true" className="text-[1.5em] font-mono tracking-widest">)|(</span>
+            <Image src="/icons/icon-192.svg" alt="Logo PKS" width={36} height={36} className="shrink-0" />
             <span className="hidden lg:inline">DPD PKS Kabupaten Pamekasan</span>
             <span className="hidden sm:inline lg:hidden">DPD PKS Kab. Pamekasan</span>
             <span className="sm:hidden">DPD PKS Pamekasan</span>

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
 
@@ -63,7 +63,7 @@ export default async function GaleriPage() {
                         className="group rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden"
                       >
                         <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                          <Image
+                          <SafeImage
                             src={item.image_url}
                             alt={item.title}
                             fill

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import HeroSection from '@/src/app/components/HeroSection';
@@ -99,7 +99,7 @@ export default async function HomePage() {
                 >
                   <div className={`${i === 0 ? 'aspect-[16/9] md:aspect-[21/9]' : 'aspect-[16/9]'} relative bg-gray-100 overflow-hidden`}>
                     {item.image_url ? (
-                      <Image
+                      <SafeImage
                         src={item.image_url}
                         alt={item.title}
                         fill
@@ -209,7 +209,7 @@ export default async function HomePage() {
                 >
                   {item.image_url ? (
                     <div className="relative aspect-video bg-gray-100 overflow-hidden">
-                      <Image
+                      <SafeImage
                         src={item.image_url}
                         alt={item.title}
                         fill

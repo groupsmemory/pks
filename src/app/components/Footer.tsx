@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+
 
 function useHighContrast() {
   const [isHighContrast, setIsHighContrast] = useState(false);
@@ -35,13 +37,17 @@ const SOSMED = [
 export default function Footer() {
   const isHighContrast = useHighContrast();
 
+
   if (isHighContrast) {
     return (
       <footer className="bg-[#000000] border-t-2 border-[#FFFF00] text-[#FFFF00] mt-12" role="contentinfo">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             <div>
-              <p className="font-bold mb-2">DPD PKS Pamekasan</p>
+              <div className="flex items-center gap-3 mb-2">
+                <Image src="/icons/icon-yellow.svg" alt="Logo PKS" width={36} height={36} className="shrink-0" />
+                <p className="font-bold mb-0">DPD PKS Pamekasan</p>
+              </div>
               <p className="text-sm opacity-80">Dewan Pengurus Daerah PKS Kabupaten Pamekasan.</p>
             </div>
             <div>
@@ -72,8 +78,7 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             {/* Logo + Nama */}
             <div className="flex items-center gap-4">
-              {/* Ganti dengan <Image src="/logo.png" alt="Logo PKS" width={48} height={48} /> */}
-              <span className="text-2xl font-mono tracking-widest bg-white/20 rounded-lg px-3 py-2" aria-hidden="true">)|(</span>
+              <Image src="/icons/icon-192.svg" alt="Logo PKS" width={48} height={48} className="shrink-0" />
               <div>
                 <p className="font-bold text-[1.125em]">DPD PKS Kabupaten Pamekasan</p>
                 <p className="text-sm text-orange-100">Dewan Pengurus Daerah Partai Keadilan Sejahtera</p>
@@ -105,11 +110,7 @@ export default function Footer() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Kolom 1: Alamat & Kontak */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                {/* Ganti dengan <Image src="/logo.png" alt="Logo PKS" width={36} height={36} /> */}
-                <span className="text-lg font-mono tracking-widest bg-orange-600/20 text-orange-500 rounded-lg px-2 py-1" aria-hidden="true">)|(</span>
-                <p className="font-bold text-white">DPD PKS Pamekasan</p>
-              </div>
+              <p className="font-bold text-white mb-4">DPD PKS Pamekasan</p>
               <ul className="space-y-2 text-sm leading-relaxed">
                 <li className="flex items-start gap-2">
                   <span className="mt-0.5" aria-hidden="true">📍</span>

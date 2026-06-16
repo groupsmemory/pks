@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { UploadButton } from '@uploadthing/react';
 import { createAgendaSchema, type CreateAgendaInput } from '@/src/validations/cms/agenda';
 import { createAgenda, deleteAgenda } from '@/src/app/actions/cms/agenda';
+import type { OurFileRouter } from '@/src/lib/uploadthing';
 import ConfirmModal from '@/src/components/ConfirmModal';
 import LoadingOverlay from '@/src/components/LoadingOverlay';
 
@@ -16,6 +18,7 @@ export function AgendaForm() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CreateAgendaInput>({
     resolver: zodResolver(createAgendaSchema),
@@ -90,9 +93,26 @@ export function AgendaForm() {
           </div>
         </div>
         <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-gray-700 mb-1">URL Gambar</label>
-          <input type="url" id="image_url" disabled={pending} {...register('image_url')}
-            className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+          <label className="block text-sm font-medium text-gray-700 mb-1">Gambar</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input type="url" id="image_url" disabled={pending} placeholder="URL gambar (atau upload di samping)" {...register('image_url')}
+              className="block w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+            <div className="shrink-0">
+              <UploadButton<OurFileRouter, "cmsImage">
+                endpoint="cmsImage"
+                onClientUploadComplete={(res) => {
+                  if (res?.[0]) setValue("image_url", res[0].url);
+                }}
+                onUploadError={(error: Error) => {
+                  console.error("Upload error", error);
+                }}
+                appearance={{
+                  button: "bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors",
+                  allowedContent: "hidden",
+                }}
+              />
+            </div>
+          </div>
           {errors.image_url && <p className="text-red-600 text-xs mt-1">{errors.image_url.message}</p>}
         </div>
         <div>

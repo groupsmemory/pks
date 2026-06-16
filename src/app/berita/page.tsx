@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/src/components/SafeImage';
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
 
@@ -142,7 +142,7 @@ export default async function BeritaPage({
               >
                 {item.image_url ? (
                   <div className="relative aspect-video bg-gray-100 overflow-hidden">
-                    <Image
+                    <SafeImage
                       src={item.image_url}
                       alt={item.title}
                       fill
