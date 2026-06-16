@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  /* Smooth theme transition for dark mode */
   html {
+    font-family: 'Open Sans', system-ui, -apple-system, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 

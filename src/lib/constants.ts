@@ -35,3 +35,34 @@ export const DONASI_MAX = 100_000_000;
 
 export const APP_NAME = 'DPD PKS Kabupaten Pamekasan';
 export const APP_TAGLINE = 'Bersama PKS, Pamekasan Maju dan Berkeadilan';
+
+export const AGAMA = ['ISLAM', 'KRISTEN', 'KATOLIK', 'HINDU', 'BUDHA', 'KONGHUCU'] as const;
+export type Agama = typeof AGAMA[number];
+
+export const JENIS_KELAMIN = ['LAKI_LAKI', 'PEREMPUAN'] as const;
+export type JenisKelamin = typeof JENIS_KELAMIN[number];
+
+export const GOLONGAN_DARAH = ['A', 'B', 'AB', 'O'] as const;
+export type GolonganDarah = typeof GOLONGAN_DARAH[number];
+
+export const STATUS_PERKAWINAN = ['KAWIN', 'BELUM_KAWIN', 'CERAI_HIDUP', 'CERAI_MATI'] as const;
+export type StatusPerkawinan = typeof STATUS_PERKAWINAN[number];
+
+export const PEKERJAAN = [
+  'Belum Bekerja', 'Pelajar/Mahasiswa', 'PNS', 'TNI/Polri', 'Guru/Dosen',
+  'Petani', 'Nelayan', 'Pedagang', 'Wiraswasta', 'Karyawan Swasta',
+  'Buruh', 'Satpam', 'Sopir', 'IRT', 'Tenaga Kesehatan',
+  'Pensiunan', 'Lainnya',
+] as const;
+
+export const PENDIDIKAN = [
+  'SD/Sederajat', 'SMP/Sederajat', 'SMA/Sederajat', 'D1/D2/D3',
+  'S1/D4', 'S2', 'S3',
+] as const;
+
+export const PROVINSI_DEFAULT = 'JAWA TIMUR';
+export const KOTA_DEFAULT = 'PAMEKASAN';
+export const NEGARA_DEFAULT = 'INDONESIA';
+
+export const FILE_MAX_SIZE = 20 * 1024 * 1024; // 20MB
+export const FILE_ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

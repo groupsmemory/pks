@@ -1,12 +1,18 @@
 import { getDb } from '@/src/lib/db';
 import EmptyState from '@/src/components/EmptyState';
 import FilterBar from '../FilterBar';
+import Link from 'next/link';
 
 interface KtaRow {
   id: string;
   nama_lengkap: string;
   nomor_whatsapp: string;
   kecamatan: string;
+  kelurahan_desa: string | null;
+  email: string | null;
+  tempat_lahir: string | null;
+  jenis_kelamin: string | null;
+  pekerjaan: string | null;
   status_verifikasi: string;
   created_at: string;
 }
@@ -38,7 +44,7 @@ async function getKtaList(filters: {
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  const queryStr = `SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, status_verifikasi, created_at
+  const queryStr = `SELECT id, nama_lengkap, nomor_whatsapp, kecamatan, kelurahan_desa, email, tempat_lahir, jenis_kelamin, pekerjaan, status_verifikasi, created_at
      FROM kta_registrations ${where}
      ORDER BY created_at DESC
      LIMIT 100`;
@@ -54,6 +60,13 @@ async function getKecamatanOptions(): Promise<{ value: string; label: string }[]
     SELECT DISTINCT kecamatan FROM kta_registrations WHERE kecamatan IS NOT NULL AND kecamatan != '' ORDER BY kecamatan
   ` as { kecamatan: string }[];
   return rows.map((r) => ({ value: r.kecamatan, label: r.kecamatan }));
+}
+
+function labelize(value: string | null): string {
+  if (!value) return '-';
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default async function KtaAdminPage({
@@ -113,7 +126,11 @@ export default async function KtaAdminPage({
               <tr>
                 <th scope="col" className="px-4 py-3 font-bold text-gray-700">Nama Lengkap</th>
                 <th scope="col" className="px-4 py-3 font-bold text-gray-700">WhatsApp</th>
+                <th scope="col" className="px-4 py-3 font-bold text-gray-700">Email</th>
+                <th scope="col" className="px-4 py-3 font-bold text-gray-700">Tempat Lahir</th>
+                <th scope="col" className="px-4 py-3 font-bold text-gray-700">Jenis Kelamin</th>
                 <th scope="col" className="px-4 py-3 font-bold text-gray-700">Kecamatan</th>
+                <th scope="col" className="px-4 py-3 font-bold text-gray-700">Pekerjaan</th>
                 <th scope="col" className="px-4 py-3 font-bold text-gray-700">Status</th>
                 <th scope="col" className="px-4 py-3 font-bold text-gray-700">Tanggal Daftar</th>
               </tr>
@@ -121,7 +138,14 @@ export default async function KtaAdminPage({
             <tbody className="divide-y divide-gray-100">
               {data.map((row) => (
                 <tr key={row.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-900">{row.nama_lengkap}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/dashboard/kta/${row.id}`}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      {row.nama_lengkap}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-gray-600">
                     <a
                       href={`https://wa.me/${row.nomor_whatsapp}`}
@@ -132,7 +156,11 @@ export default async function KtaAdminPage({
                       {row.nomor_whatsapp}
                     </a>
                   </td>
+                  <td className="px-4 py-3 text-gray-600">{row.email || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600">{row.tempat_lahir || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600">{row.jenis_kelamin ? labelize(row.jenis_kelamin) : '-'}</td>
                   <td className="px-4 py-3 text-gray-600">{row.kecamatan}</td>
+                  <td className="px-4 py-3 text-gray-600">{row.pekerjaan || '-'}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block px-2 py-1 text-xs font-bold rounded ${
                       row.status_verifikasi === 'PENDING'
@@ -144,7 +172,7 @@ export default async function KtaAdminPage({
                       {row.status_verifikasi}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
                     {new Date(row.created_at).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'short',

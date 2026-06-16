@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import KtaForm from '@/src/app/components/KtaForm';
+import Link from 'next/link';
 import HeroSection from '@/src/app/components/HeroSection';
 import QuickStats from '@/src/app/components/QuickStats';
 import SidebarKunjungi from '@/src/app/components/SidebarKunjungi';
@@ -153,8 +153,18 @@ export default async function HomePage() {
               <hr className="border-current opacity-30" />
 
               {/* Registrasi KTA Online */}
-              <div id="heading-kta">
-                <KtaForm />
+              <div id="heading-kta" className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8 shadow-sm">
+                <h2 className="text-[1.5em] font-extrabold mb-2">Registrasi KTA Online Mandiri</h2>
+                <p className="text-gray-600 mb-6">
+                  Daftarkan diri Anda sebagai kader resmi DPD PKS Kabupaten Pamekasan.
+                  Identitas Anda dilindungi enkripsi AES-256-GCM.
+                </p>
+                <Link
+                  href="/daftar"
+                  className="inline-flex items-center min-h-[44px] px-6 py-3 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-colors"
+                >
+                  Daftar KTA Online →
+                </Link>
               </div>
             </div>
 

@@ -59,19 +59,20 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   { label: 'Agenda', href: '/agenda' },
-  {
-    label: 'Layanan',
-    megaMenu: [
       {
-        category: 'Layanan Publik',
-        links: [
-          { href: '/sowan-kyai', label: 'Sowan Kyai' },
-          { href: '/rki', label: 'RKI BIPEKA' },
-          { href: '/donasi', label: 'Donasi & Infak' },
+        label: 'Layanan',
+        megaMenu: [
+          {
+            category: 'Layanan Publik',
+            links: [
+              { href: '/sowan-kyai', label: 'Sowan Kyai' },
+              { href: '/rki', label: 'RKI BIPEKA' },
+              { href: '/donasi', label: 'Donasi & Infak' },
+              { href: '/daftar', label: 'Daftar KTA' },
+            ],
+          },
         ],
       },
-    ],
-  },
   { label: 'Kontak', href: '/kontak' },
 ];
 
